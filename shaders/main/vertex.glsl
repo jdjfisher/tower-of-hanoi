@@ -1,5 +1,4 @@
 attribute vec4 vPosition;
-attribute vec4 vColor;
 
 varying vec4 fColor;
 
@@ -33,5 +32,5 @@ void main()
         0.0,  0.0, 0.0, 1.0 );
 
     gl_Position = projectionMatrix * modelViewMatrix * rz * ry * rx * vPosition;
-    fColor = vColor;
+    fColor = gl_Position;
 }
