@@ -9,24 +9,23 @@ var yAxis = 1;
 var zAxis = 2;
 var axis = 0;
 var theta = [ 0, 0, 0 ];
-var thetaLoc;
 var spin = false;
 
 // Projection constants
-const near = 0.1;
-const far = 5.0;
+const near = 0.001;
+const far = 10.0;
 const fovy = 60.0;
 const aspect = 1.0;   
 
 // View constants
-const eye = vec3(0, 2.0, 2.0);
-const at = vec3(0.0, 0.0, 0.0);
+const eye = vec3(0, 1.0, 2.0);
+const at = vec3(0.0, 0.5, 0.0);
 const up = vec3(0.0, 1.0, 0.0);
 
 // Scene 
-var models = [];
-var meshes = [];
+var models = {};
 
+var colourLoc;
 var modelViewMatrixLoc, projectionMatrixLoc;
 
 window.onload = () =>
@@ -49,7 +48,7 @@ function initOpenGL()
     }
 
     gl.viewport( 0, 0, canvas.width, canvas.height );
-    gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
+    gl.clearColor( ...black, 1.0 );
     gl.enable(gl.DEPTH_TEST);
 
     program = initShaders( gl, "shaders/main/vertex.glsl", "shaders/main/fragment.glsl" );
@@ -58,18 +57,27 @@ function initOpenGL()
     modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
     
-    thetaLoc = gl.getUniformLocation(program, "theta");
+    colourLoc = gl.getUniformLocation(program, "colour");
 }
 
 function initScene()
 {
-    const cubeMesh = createMesh(cube());
     const planeMesh = createMesh(plane());
+    const cubeMesh = createMesh(cube());
 
-    meshes = [
-        cubeMesh,
-        planeMesh,
-    ];
+    models = {
+        xzPlane: {
+            mesh: planeMesh,
+            colour: white,
+            scale: vec3(3, 3, 3),
+        },
+        spinningCube: {
+            mesh: cubeMesh,
+            colour: blue,
+            position: vec3(0.0, 1.0, 0.0),
+            rotation: theta,
+        },
+    };
 }
 
 function createMesh(vertices)
@@ -120,21 +128,42 @@ function render()
 {
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    const modelViewMatrix = lookAt(eye, at , up);
+    const viewMatrix = lookAt(eye, at , up);
     const projectionMatrix = perspective(fovy, aspect, near, far);
 
-    gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
     gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
-    gl.uniform3fv(thetaLoc, theta);
 
     // Draw meshes
-    meshes.forEach(mesh => {
-        gl.bindBuffer( gl.ARRAY_BUFFER, mesh.vBuffer );
+    Object.values(models).forEach(model => {
+        gl.bindBuffer( gl.ARRAY_BUFFER, model.mesh.vBuffer );
 
         var vPosition = gl.getAttribLocation( program, "vPosition" );
         gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0 );
         gl.enableVertexAttribArray( vPosition );
 
-        gl.drawArrays( gl.TRIANGLES, 0, mesh.vCount );
+        gl.uniform3fv(colourLoc, model.colour);
+
+        var modelMatrix = mat4();
+
+        if (model.position) {
+            modelMatrix = mult(modelMatrix, translate(model.position));
+        } 
+
+        if (model.rotation) {
+            const [ x, y , z ] = model.rotation;
+            modelMatrix = mult(modelMatrix, rotateX(x));
+            modelMatrix = mult(modelMatrix, rotateY(y));
+            modelMatrix = mult(modelMatrix, rotateZ(z));
+        } 
+
+        if (model.scale) {
+            modelMatrix = mult(modelMatrix, scalem(model.scale));
+        } 
+        
+        const modelViewMatrix = mult(viewMatrix, modelMatrix);
+        gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
+
+        gl.drawArrays( gl.TRIANGLES, 0, model.mesh.vCount );
     });
+
 }
