@@ -1,42 +1,69 @@
-"use strict";
-
+var program;
 var canvas;
 var gl;
 
+// 
 var NumVertices  = 36;
-
 var points = [];
 var colors = [];
-
 var xAxis = 0;
 var yAxis = 1;
 var zAxis = 2;
-
 var axis = 0;
 var theta = [ 0, 0, 0 ];
-
 var thetaLoc;
-var stop = true;
+var spin = false;
 
-window.onload = function init()
+// Projection constants
+const near = 0.1;
+const far = 5.0;
+const fovy = 60.0;
+const aspect = 1.0;   
+
+var modelViewMatrix, projectionMatrix;
+var modelViewMatrixLoc, projectionMatrixLoc;
+
+
+window.onload = () =>
+{
+    initOpenGL();
+    initElements();
+
+    mainLoop();
+}
+
+function initOpenGL()
 {
     canvas = document.getElementById( "gl-canvas" );
 
     gl = WebGLUtils.setupWebGL( canvas );
-    if ( !gl ) { alert( "WebGL isn't available" ); }
-
-    colorCube();
+    if ( !gl ) {
+        alert( "WebGL isn't available" ); 
+        return null;
+    }
 
     gl.viewport( 0, 0, canvas.width, canvas.height );
     gl.clearColor( 0.0, 0.0, 0.0, 1.0 );
-
     gl.enable(gl.DEPTH_TEST);
 
-    //
-    //  Load shaders and initialize attribute buffers
-    //
-    var program = initShaders( gl, "shaders/main/vertex.glsl", "shaders/main/fragment.glsl" );
+    program = initShaders( gl, "shaders/main/vertex.glsl", "shaders/main/fragment.glsl" );
     gl.useProgram( program );
+
+    initMeshes();
+
+    var vPosition = gl.getAttribLocation( program, "vPosition" );
+    gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vPosition );
+
+    modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
+    projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
+
+    thetaLoc = gl.getUniformLocation(program, "theta");
+}
+
+function initMeshes()
+{
+    colorCube();
 
     var cBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
@@ -49,29 +76,24 @@ window.onload = function init()
     var vBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
+}
+ 
 
-
-    var vPosition = gl.getAttribLocation( program, "vPosition" );
-    gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vPosition );
-
-    thetaLoc = gl.getUniformLocation(program, "theta");
-
+function initElements()
+{
     //event listeners for buttons
     document.getElementById( "xButton" ).onclick = function () {
         axis = xAxis;
-        stop = false;
+        spin = true;
     };
     document.getElementById( "yButton" ).onclick = function () {
         axis = yAxis;
-        stop = false;
+        spin = true;
     };
     document.getElementById( "zButton" ).onclick = function () {
         axis = zAxis;
-        stop = false;
+        spin = true;
     };
-
-    render();
 }
 
 function colorCube()
@@ -120,7 +142,21 @@ function quad(a, b, c, d)
 
         // for solid colored faces use
         colors.push(vertexColors[a-1]);
+    }
+}
 
+function mainLoop()
+{
+    update(); 
+    render();
+    
+    requestAnimFrame( mainLoop );
+}
+
+function update()
+{
+    if(spin) {
+        theta[axis] += 1.0;
     }
 }
 
@@ -128,13 +164,17 @@ function render()
 {
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    if(!stop) 
-    //we start with a still cube using the 'stop' variable 
-        theta[axis] += 1.0;
-    
+    const eye = vec3(0, 0, 1.0);
+    const at = vec3(0.0, 0.0, 0.0);
+    const up = vec3(0.0, 1.0, 0.0);
+
+    modelViewMatrix = lookAt(eye, at , up);
+    projectionMatrix = perspective(fovy, aspect, near, far);
+
+    gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
+    gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
     gl.uniform3fv(thetaLoc, theta);
 
+    // Draw meshes
     gl.drawArrays( gl.TRIANGLES, 0, NumVertices );
-
-    requestAnimFrame( render );
 }

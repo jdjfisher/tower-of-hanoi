@@ -1,7 +1,11 @@
-attribute  vec4 vPosition;
-attribute  vec4 vColor;
+attribute vec4 vPosition;
+attribute vec4 vColor;
+
 varying vec4 fColor;
+
 uniform vec3 theta;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
 
 void main()
 {
@@ -28,7 +32,6 @@ void main()
         0.0,  0.0, 1.0, 0.0,
         0.0,  0.0, 0.0, 1.0 );
 
+    gl_Position = projectionMatrix * modelViewMatrix * rz * ry * rx * vPosition;
     fColor = vColor;
-    gl_Position = rz * ry * rx * vPosition;
-    gl_Position.z = -gl_Position.z;
 }
