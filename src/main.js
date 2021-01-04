@@ -23,7 +23,7 @@ const fovy = 60.0;
 const aspect = 1.0;   
 
 // View constants
-const eye = vec3(0, 1.0, 2.0);
+const eye = vec3(0, 3.0, 2.0);
 const at = vec3(0.0, 0.5, 0.0);
 const up = vec3(0.0, 1.0, 0.0);
 
@@ -59,7 +59,6 @@ function initOpenGL()
 
     modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
-    
     modelColourLoc = gl.getUniformLocation(program, "modelColour");
     ambientIntensityLoc = gl.getUniformLocation(program, "ambientIntensity");
     lightLoc = {
@@ -71,17 +70,14 @@ function initOpenGL()
 
 function initScene()
 {
-    const planeMesh = createMesh(plane());
-    const cubeMesh = createMesh(cube());
-
     models = {
         xzPlane: {
-            mesh: planeMesh,
+            mesh: planeMesh(),
             colour: white,
             scale: vec3(3, 3, 3),
         },
         spinningCube: {
-            mesh: cubeMesh,
+            mesh: cubeMesh(),
             colour: blue,
             position: vec3(0.0, 1.0, 0.0),
             rotation: vec3(),
@@ -91,20 +87,8 @@ function initScene()
     light = {
         colour: white,
         position: vec3(0.0, 5.0, 0.0),
-        intensity: 1,
+        intensity: 0.5,
     }
-}
-
-function createMesh(vertices)
-{
-    var vBuffer = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW );
-
-    return {
-        vCount: vertices.length,
-        vBuffer: vBuffer,
-    };
 }
 
 function initElements()
@@ -161,6 +145,12 @@ function render()
         var vPosition = gl.getAttribLocation( program, "vPosition" );
         gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0 );
         gl.enableVertexAttribArray( vPosition );
+
+        gl.bindBuffer( gl.ARRAY_BUFFER, model.mesh.nBuffer );
+
+        var vNormal = gl.getAttribLocation( program, "vNormal" );
+        gl.vertexAttribPointer( vNormal, 3, gl.FLOAT, false, 0, 0 );
+        gl.enableVertexAttribArray( vNormal );
 
         gl.uniform3fv(modelColourLoc, model.colour);
 

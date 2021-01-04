@@ -9,5 +9,5 @@ varying vec3 fNormal;
 void main()
 {
     gl_Position = projectionMatrix * modelViewMatrix * vPosition;
-    fNormal = vNormal;
+    fNormal = vec3(modelViewMatrix * vec4(vNormal, 1.0));
 }
