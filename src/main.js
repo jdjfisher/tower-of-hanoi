@@ -9,24 +9,6 @@ var modelColourLoc;
 var ambientIntensityLoc;
 var modelViewMatrixLoc, projectionMatrixLoc;
 
-// 
-var xAxis = 0;
-var yAxis = 1;
-var zAxis = 2;
-var axis = 0;
-var spin = false;
-
-// Projection constants
-const near = 0.001;
-const far = 10.0;
-const fovy = 60.0;
-const aspect = 1.0;   
-
-// View constants
-const eye = vec3(0, 3.0, 2.0);
-const at = vec3(0.0, 0.5, 0.0);
-const up = vec3(0.0, 1.0, 0.0);
-
 // Scene 
 var models = {};
 var light = {};
@@ -74,7 +56,7 @@ function initScene()
         xzPlane: {
             mesh: planeMesh(),
             colour: white,
-            scale: vec3(3, 3, 3),
+            scale: vec3(10, 10, 10),
         },
         spinningCube: {
             mesh: cubeMesh(),
@@ -86,26 +68,23 @@ function initScene()
 
     light = {
         colour: white,
-        position: vec3(0.0, 5.0, 0.0),
-        intensity: 0.5,
+        position: vec3(0.0, 3.0, 0.0),
+        intensity: 3,
     }
 }
 
 function initElements()
 {
-    //event listeners for buttons
-    document.getElementById( "xButton" ).onclick = () => {
-        axis = xAxis;
-        spin = true;
-    };
-    document.getElementById( "yButton" ).onclick = () => {
-        axis = yAxis;
-        spin = true;
-    };
-    document.getElementById( "zButton" ).onclick = () => {
-        axis = zAxis;
-        spin = true;
-    };
+    window.addEventListener ('keydown', e => {
+        switch(e.key) {
+            case 'ArrowLeft':
+                prevCamera();
+                break;
+            case 'ArrowRight':
+                nextCamera();
+                break;
+        }
+    }) ;
 }
 
 function mainLoop()
@@ -118,25 +97,20 @@ function mainLoop()
 
 function update()
 {
-    if(spin) {
-        models.spinningCube.rotation[axis] += 1.0;
-    }
+    models.spinningCube.rotation[0] += 0.5;
+    models.spinningCube.rotation[1] += 1.0;
 }
 
 function render()
 {
+    // Clear the default framebuffer
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    const viewMatrix = lookAt(eye, at , up);
-    const projectionMatrix = perspective(fovy, aspect, near, far);
-
-    gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
-    
-    gl.uniform1f( ambientIntensityLoc, 0.1 );
-
+    gl.uniform1f( ambientIntensityLoc, 0.3 );
     gl.uniform3fv( lightLoc.colour, light.colour );
     gl.uniform3fv( lightLoc.position, light.position );
     gl.uniform1f( lightLoc.intensity, light.intensity );
+    gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten( getProjectionMatrix() ) );
 
     // Draw meshes
     Object.values(models).forEach(model => {
@@ -171,10 +145,9 @@ function render()
             modelMatrix = mult(modelMatrix, scalem(model.scale));
         } 
         
-        const modelViewMatrix = mult(viewMatrix, modelMatrix);
+        const modelViewMatrix = mult( getViewMatrix(), modelMatrix );
         gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
 
         gl.drawArrays( gl.TRIANGLES, 0, model.mesh.vCount );
     });
-
 }
