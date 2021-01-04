@@ -3,12 +3,17 @@ var program;
 var canvas;
 var gl;
 
+// Uniforms
+var lightLoc;
+var modelColourLoc;
+var ambientIntensityLoc;
+var modelViewMatrixLoc, projectionMatrixLoc;
+
 // 
 var xAxis = 0;
 var yAxis = 1;
 var zAxis = 2;
 var axis = 0;
-var theta = [ 0, 0, 0 ];
 var spin = false;
 
 // Projection constants
@@ -24,9 +29,7 @@ const up = vec3(0.0, 1.0, 0.0);
 
 // Scene 
 var models = {};
-
-var colourLoc;
-var modelViewMatrixLoc, projectionMatrixLoc;
+var light = {};
 
 window.onload = () =>
 {
@@ -57,7 +60,13 @@ function initOpenGL()
     modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
     
-    colourLoc = gl.getUniformLocation(program, "colour");
+    modelColourLoc = gl.getUniformLocation(program, "modelColour");
+    ambientIntensityLoc = gl.getUniformLocation(program, "ambientIntensity");
+    lightLoc = {
+        colour: gl.getUniformLocation(program, "light.colour"),
+        position: gl.getUniformLocation(program, "light.position"),
+        intensity: gl.getUniformLocation(program, "light.intensity"),
+    } 
 }
 
 function initScene()
@@ -75,9 +84,15 @@ function initScene()
             mesh: cubeMesh,
             colour: blue,
             position: vec3(0.0, 1.0, 0.0),
-            rotation: theta,
+            rotation: vec3(),
         },
     };
+
+    light = {
+        colour: white,
+        position: vec3(0.0, 5.0, 0.0),
+        intensity: 1,
+    }
 }
 
 function createMesh(vertices)
@@ -120,7 +135,7 @@ function mainLoop()
 function update()
 {
     if(spin) {
-        theta[axis] += 1.0;
+        models.spinningCube.rotation[axis] += 1.0;
     }
 }
 
@@ -132,6 +147,12 @@ function render()
     const projectionMatrix = perspective(fovy, aspect, near, far);
 
     gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
+    
+    gl.uniform1f( ambientIntensityLoc, 0.1 );
+
+    gl.uniform3fv( lightLoc.colour, light.colour );
+    gl.uniform3fv( lightLoc.position, light.position );
+    gl.uniform1f( lightLoc.intensity, light.intensity );
 
     // Draw meshes
     Object.values(models).forEach(model => {
@@ -141,7 +162,7 @@ function render()
         gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0 );
         gl.enableVertexAttribArray( vPosition );
 
-        gl.uniform3fv(colourLoc, model.colour);
+        gl.uniform3fv(modelColourLoc, model.colour);
 
         var modelMatrix = mat4();
 
