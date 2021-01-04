@@ -35,7 +35,7 @@ window.onload = function init()
     //
     //  Load shaders and initialize attribute buffers
     //
-    var program = initShaders( gl, "vertex-shader", "fragment-shader" );
+    var program = initShaders( gl, "shaders/main/vertex.glsl", "shaders/main/fragment.glsl" );
     gl.useProgram( program );
 
     var cBuffer = gl.createBuffer();
