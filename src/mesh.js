@@ -118,3 +118,49 @@ function tetrahedronMesh()
 
   return createMesh( vertices, faces );
 }
+
+function sphereMesh(divisions=5) 
+{
+  var vertices = [];
+  var faces = []
+  var index = 0;
+
+  var a = vec4(0.0, 0.0, -1.0,1);
+  var b = vec4(0.0, 0.942809, 0.333333, 1);
+  var c = vec4(-0.816497, -0.471405, 0.333333, 1);
+  var d = vec4(0.816497, -0.471405, 0.333333,1);
+
+  subdivide(a, b, c, divisions);
+  subdivide(d, c, b, divisions);
+  subdivide(a, d, b, divisions);
+  subdivide(a, c, d, divisions);
+
+  return createMesh( vertices, faces);
+
+  // Nested function
+  function subdivide(a, b, c, n) 
+  {
+    if ( n > 0 ) {
+        const ab = normalize( mix( a, b, 0.5), true );
+        const ac = normalize( mix( a, c, 0.5), true );
+        const bc = normalize( mix( b, c, 0.5), true );
+
+        subdivide( a, ab, ac, n - 1 );
+        subdivide( ab, b, bc, n - 1 );
+        subdivide( bc, c, ac, n - 1 );
+        subdivide( ab, bc, ac, n - 1 );
+    }
+    else {
+      vertices.push(c);
+      vertices.push(b);
+      vertices.push(a);
+  
+      faces.push([
+        index++,
+        index++,
+        index++,
+      ])
+    }
+  }
+}
+

@@ -72,15 +72,21 @@ function initScene()
 {
     // Initialise meshes
     const tm = tetrahedronMesh();
+    const sm = sphereMesh(5);
     const pm = planeMesh();
     const cm = cubeMesh();
 
     // Define light source
     light = {
-        colour: white,
-        mesh: cm,
-        position: vec3(0.0, 5.0, 0.5),
-        intensity: 3,
+        mesh: sm,
+        material: {
+            colour: white,
+            intensity: 3,
+        },
+        transform: {
+            position: vec3(0.0, 5.0, 0.5),
+            scale: vec3(0.3, 0.3, 0.3),
+        },
     };
 
     // Define models
@@ -258,41 +264,43 @@ function render()
 
     // Set global uniforms
     gl.uniform1f( ambientIntensityLoc, 0.2 );
-    gl.uniform3fv( lightLoc.colour, light.colour );
-    gl.uniform3fv( lightLoc.position, light.position );
-    gl.uniform1f( lightLoc.intensity, light.intensity );
+    gl.uniform3fv( lightLoc.colour, light.material.colour );
+    gl.uniform1f( lightLoc.intensity, light.material.intensity );
+    gl.uniform3fv( lightLoc.position, light.transform.position );
     
     gl.uniform3fv( viewPositionLoc, eye );
     gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten( getProjectionMatrix() ) );
     gl.uniformMatrix4fv( viewMatrixLoc, false, flatten( getViewMatrix() ) );
 
-    // Draw model meshes
+    // Render scene models
     Object.values(models).forEach(model => {
-
-        // Compute model matrix
-        var modelMatrix = mat4();
-
-        if (model.transform.position) 
-            modelMatrix = mult(modelMatrix, translate(model.transform.position));
-
-        if (model.transform.rotation) 
-            modelMatrix = mult(modelMatrix, rotateEuler(...model.transform.rotation));
-
-        if (model.transform.scale) 
-            modelMatrix = mult(modelMatrix, scalem(model.transform.scale));
-         
-        // Set model uniforms
-        gl.uniformMatrix4fv( modelMatrixLoc, false, flatten(modelMatrix) );
-        gl.uniform3fv(modelColourLoc, model.material.colour);
-        gl.uniform1f(modelShininessLoc, model.material.shininess || 32);
-
-        // Render the model mesh
-        renderMesh(model.mesh);
+        renderModel(model);
     });
 
-    // Draw light mesh
+    // Render light model
     gl.uniform1f( ambientIntensityLoc, 1.0 );
-    gl.uniformMatrix4fv( modelMatrixLoc, false, flatten( translate( light.position ) ) );
-    gl.uniform3fv(modelColourLoc, light.colour);
-    renderMesh(light.mesh);
+    renderModel(light);
+}
+
+function renderModel(model) 
+{
+    // Compute model matrix
+    var modelMatrix = mat4();
+
+    if (model.transform.position) 
+        modelMatrix = mult(modelMatrix, translate(model.transform.position));
+
+    if (model.transform.rotation) 
+        modelMatrix = mult(modelMatrix, rotateEuler(...model.transform.rotation));
+
+    if (model.transform.scale) 
+        modelMatrix = mult(modelMatrix, scalem(model.transform.scale));
+    
+    // Set model uniforms
+    gl.uniformMatrix4fv( modelMatrixLoc, false, flatten(modelMatrix) );
+    gl.uniform3fv(modelColourLoc, model.material.colour);
+    gl.uniform1f(modelShininessLoc, model.material.shininess || 32);
+
+    // Render the model mesh
+    renderMesh(model.mesh);
 }
