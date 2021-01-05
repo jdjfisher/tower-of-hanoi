@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <style>
+    canvas {
+      top: 50%;
+      left: 50%;
+      position: fixed;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+
   <script type="text/javascript" src="src/utils/webgl.js"></script>
   <script type="text/javascript" src="src/utils/math.js"></script>
   <script type="text/javascript" src="src/utils/colour.js"></script>
@@ -15,7 +24,7 @@
 </head>
 
 <body>
-  <canvas id="gl-canvas" width="512"" height="512">
+  <canvas id="gl-canvas" width="800" height="800" >
     Your browser does not support the HTML5 canvas element!
   </canvas>
 </body>
