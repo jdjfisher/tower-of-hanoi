@@ -1,5 +1,6 @@
-uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
 
 attribute vec4 vPosition;
 attribute vec3 vNormal;
@@ -9,7 +10,8 @@ varying vec3 fPosition;
 
 void main()
 {
-    gl_Position = projectionMatrix * modelViewMatrix * vPosition;
-    fPosition = vec3(modelViewMatrix * vPosition);
-    fNormal = vNormal;
+    vec4 modelPosition = modelMatrix * vPosition;
+    fPosition = vec3( modelPosition );
+    fNormal = normalize(mat3(modelMatrix) * vNormal);
+    gl_Position = projectionMatrix * viewMatrix * modelPosition;
 }

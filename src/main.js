@@ -8,7 +8,9 @@ var lightLoc;
 var modelColourLoc;
 var viewPositionLoc;
 var ambientIntensityLoc;
-var modelViewMatrixLoc, projectionMatrixLoc;
+var modelMatrixLoc;
+var viewMatrixLoc;
+var projectionMatrixLoc;
 
 // Scene 
 var models = {};
@@ -37,6 +39,7 @@ function initOpenGL()
     // Configure WebGL
     gl.viewport( 0, 0, canvas.width, canvas.height );
     gl.clearColor( ...black, 1.0 );
+    gl.cullFace(gl.BACK);
     gl.enable(gl.DEPTH_TEST);
 
     // Setup shader program
@@ -45,7 +48,8 @@ function initOpenGL()
 
     // Create uniforms
     viewPositionLoc = gl.getUniformLocation( program, "viewPosition" );
-    modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
+    modelMatrixLoc = gl.getUniformLocation( program, "modelMatrix" );
+    viewMatrixLoc = gl.getUniformLocation( program, "viewMatrix" );
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
     modelColourLoc = gl.getUniformLocation(program, "modelColour");
     ambientIntensityLoc = gl.getUniformLocation(program, "ambientIntensity");
@@ -140,11 +144,13 @@ function render()
 
     // Set global uniforms
     gl.uniform3fv( viewPositionLoc, eye );
-    gl.uniform1f( ambientIntensityLoc, 0.3 );
+    gl.uniform1f( ambientIntensityLoc, 0.1 );
     gl.uniform3fv( lightLoc.colour, light.colour );
     gl.uniform3fv( lightLoc.position, light.position );
     gl.uniform1f( lightLoc.intensity, light.intensity );
+
     gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten( getProjectionMatrix() ) );
+    gl.uniformMatrix4fv( viewMatrixLoc, false, flatten( getViewMatrix() ) );
 
     // Draw light mesh
     // TODO: ...
@@ -163,11 +169,9 @@ function render()
 
         if (model.scale) 
             modelMatrix = mult(modelMatrix, scalem(model.scale));
-        
-        const modelViewMatrix = mult( getViewMatrix(), modelMatrix );
-        
+         
         // Set model uniforms
-        gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
+        gl.uniformMatrix4fv( modelMatrixLoc, false, flatten(modelMatrix) );
         gl.uniform3fv(modelColourLoc, model.colour);
 
         // Bind model-mesh verticies
