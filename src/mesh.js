@@ -19,26 +19,50 @@ function renderMesh(mesh)
 
 function createMesh(vertices, faces)
 {
+    // Calculate normals
     const faceNormals = calcNormals( vertices, faces );
 
-    // TODO: Smooth vertex normals
+    // Normal smoothing
+    var allVertexNormals = [];
+    for (var i = 0; i < faces.length; i++) {
+        for (var index of faces[i]) {
+            if (allVertexNormals[index]) {
+                allVertexNormals[index].push( faceNormals[i] )
+            } else {
+                allVertexNormals[index] = [ faceNormals[i] ];
+            }
+        }
+    }
 
     var vertexNormals = [];
     for (var i = 0; i < faces.length; i++) {
-      vertexNormals = [...vertexNormals, ...Array(faces[i].length).fill(faceNormals[i])] 
+        for (var index of faces[i]) {
+          var smoothN = faceNormals[i];
+
+          for (var n of allVertexNormals[index]) {
+              const product = dot(faceNormals[i], n);
+
+              if (product >= 0.15 && product <= 1.0) {
+                  smoothN = add( smoothN, n );
+              }
+          }
+
+          vertexNormals.push( normalize( smoothN ) );
+        }
     }
 
     var normalBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, normalBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(vertexNormals), gl.STATIC_DRAW );
 
+    // Dereference face indicies
     vertices = faces.flat().map(i => vertices[i]);
 
     var vertexBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vertexBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW );
 
-
+    // Return mesh data
     return {
         vCount: vertices.length,
         vBuffer: vertexBuffer,
@@ -173,6 +197,7 @@ function diskMesh(or, ir, h, n=50)
   const hh = h / 2;
   var theta = 0;
 
+  // Generate verticies
   for (var i = 0; i < n; i++) {
       sinT = Math.sin(theta);
       cosT = Math.cos(theta);
