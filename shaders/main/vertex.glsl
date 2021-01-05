@@ -5,9 +5,11 @@ attribute vec4 vPosition;
 attribute vec3 vNormal;
 
 varying vec3 fNormal;
+varying vec3 fPosition;
 
 void main()
 {
     gl_Position = projectionMatrix * modelViewMatrix * vPosition;
-    fNormal = vec3(modelViewMatrix * vec4(vNormal, 1.0));
+    fPosition = vec3(modelViewMatrix * vPosition);
+    fNormal = vNormal;
 }

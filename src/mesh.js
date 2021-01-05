@@ -28,6 +28,15 @@ function createMesh(vertices, faces)
     };
 }
 
+function calcNormals(vertices, faces) {
+  return faces.map(face => {
+    const edge1 = subtract( vertices[face[1]], vertices[face[0]] );
+    const edge2 = subtract( vertices[face[2]], vertices[face[0]] );
+
+    return normalize( cross( edge1, edge2 ) );
+  });
+} 
+
 function triangulateQuad(a, b, c, d) {
   return [a, b, c, a, c, d];
 }
@@ -69,11 +78,20 @@ function planeMesh() {
   return createMesh( vertices, [ face ] );
 }
 
-function calcNormals(vertices, faces) {
-  return faces.map(face => {
-    const edge1 = subtract( vertices[face[1]], vertices[face[0]] );
-    const edge2 = subtract( vertices[face[2]], vertices[face[0]] );
+function tetrahedronMesh() {
+  const vertices = [
+    vec4(0, 0, -1, 1),
+    vec4(0, 0.942809, 0.333333, 1),
+    vec4(-0.816497, -0.471405, 0.333333, 1),
+    vec4(0.816497, -0.471405, 0.333333, 1),
+  ];
 
-    return normalize( cross( edge1, edge2 ) );
-  });
-} 
+  const faces = [
+    [ 0, 1, 2 ],
+    [ 3, 2, 1 ],
+    [ 0, 3, 1 ],
+    [ 0, 2, 3 ],
+  ];
+
+  return createMesh( vertices, faces );
+}

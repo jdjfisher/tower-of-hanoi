@@ -6,6 +6,7 @@ var gl;
 // Uniforms
 var lightLoc;
 var modelColourLoc;
+var viewPositionLoc;
 var ambientIntensityLoc;
 var modelViewMatrixLoc, projectionMatrixLoc;
 
@@ -39,6 +40,7 @@ function initOpenGL()
     program = initShaders( gl, "shaders/main/vertex.glsl", "shaders/main/fragment.glsl" );
     gl.useProgram( program );
 
+    viewPositionLoc = gl.getUniformLocation( program, "viewPosition" );
     modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
     modelColourLoc = gl.getUniformLocation(program, "modelColour");
@@ -56,13 +58,19 @@ function initScene()
         xzPlane: {
             mesh: planeMesh(),
             colour: white,
-            scale: vec3(10, 10, 10),
+            scale: vec3(10, 0, 10),
         },
         spinningCube: {
             mesh: cubeMesh(),
             colour: blue,
-            position: vec3(0.0, 1.0, 0.0),
+            position: vec3(0.0, 2.0, 0.0),
             rotation: vec3(),
+        },
+        pyramid: {
+            mesh: tetrahedronMesh(),
+            colour: green,
+            position: vec3(1.0, 0.5, 1.0),
+            scale: vec3(0.5, 0.5, 0.5),
         },
     };
 
@@ -82,6 +90,24 @@ function initElements()
                 break;
             case 'ArrowRight':
                 nextCamera();
+                break;
+            case 'w':
+                eye = add( eye, normalize( subtract( at, eye ) ) );
+                break;
+            case 's':
+                eye = subtract( eye, normalize( subtract( at, eye ) ) );
+                break;
+            case 'a':
+                eye = add( eye, cross( up, normalize( subtract( at, eye ) ) ) );
+                break;
+            case 'd':
+                eye = subtract( eye, cross( up, normalize( subtract( at, eye ) ) ) );
+                break;
+            case 'q':
+                eye[1]++;
+                break;
+            case 'e':
+                eye[1]--;
                 break;
         }
     }) ;
@@ -106,13 +132,19 @@ function render()
     // Clear the default framebuffer
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+    // Set uniforms
+    gl.uniform3fv( viewPositionLoc, eye );
     gl.uniform1f( ambientIntensityLoc, 0.3 );
     gl.uniform3fv( lightLoc.colour, light.colour );
     gl.uniform3fv( lightLoc.position, light.position );
     gl.uniform1f( lightLoc.intensity, light.intensity );
     gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten( getProjectionMatrix() ) );
 
-    // Draw meshes
+
+    // Draw light mesh
+    // TODO: ...
+
+    // Draw model meshes
     Object.values(models).forEach(model => {
         gl.bindBuffer( gl.ARRAY_BUFFER, model.mesh.vBuffer );
 
