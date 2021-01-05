@@ -379,6 +379,10 @@ function rotate( angle, axis )
     return result;
 }
 
+function rotateEuler( x, y, z ) {
+    return mult( rotateZ(z), mult( rotateY(y), rotateX(x) ) );
+}
+
 function rotateX(theta) {
   var c = Math.cos( radians(theta) );
   var s = Math.sin( radians(theta) );

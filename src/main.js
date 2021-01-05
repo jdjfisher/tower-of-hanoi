@@ -27,19 +27,23 @@ function initOpenGL()
 {
     canvas = document.getElementById( "gl-canvas" );
 
+    // Initialise WebGL
     gl = WebGLUtils.setupWebGL( canvas );
     if ( !gl ) {
         alert( "WebGL isn't available" ); 
         return null;
     }
 
+    // Configure WebGL
     gl.viewport( 0, 0, canvas.width, canvas.height );
     gl.clearColor( ...black, 1.0 );
     gl.enable(gl.DEPTH_TEST);
 
+    // Setup shader program
     program = initShaders( gl, "shaders/main/vertex.glsl", "shaders/main/fragment.glsl" );
     gl.useProgram( program );
 
+    // Create uniforms
     viewPositionLoc = gl.getUniformLocation( program, "viewPosition" );
     modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
@@ -54,6 +58,7 @@ function initOpenGL()
 
 function initScene()
 {
+    // Define models
     models = {
         xzPlane: {
             mesh: planeMesh(),
@@ -74,6 +79,7 @@ function initScene()
         },
     };
 
+    // Define light source
     light = {
         colour: white,
         position: vec3(0.0, 3.0, 0.0),
@@ -132,7 +138,7 @@ function render()
     // Clear the default framebuffer
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // Set uniforms
+    // Set global uniforms
     gl.uniform3fv( viewPositionLoc, eye );
     gl.uniform1f( ambientIntensityLoc, 0.3 );
     gl.uniform3fv( lightLoc.colour, light.colour );
@@ -140,46 +146,43 @@ function render()
     gl.uniform1f( lightLoc.intensity, light.intensity );
     gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten( getProjectionMatrix() ) );
 
-
     // Draw light mesh
     // TODO: ...
 
     // Draw model meshes
     Object.values(models).forEach(model => {
-        gl.bindBuffer( gl.ARRAY_BUFFER, model.mesh.vBuffer );
 
+        // Compute model matrix
+        var modelMatrix = mat4();
+
+        if (model.position) 
+            modelMatrix = mult(modelMatrix, translate(model.position));
+
+        if (model.rotation) 
+            modelMatrix = mult(modelMatrix, rotateEuler(...model.rotation));
+
+        if (model.scale) 
+            modelMatrix = mult(modelMatrix, scalem(model.scale));
+        
+        const modelViewMatrix = mult( getViewMatrix(), modelMatrix );
+        
+        // Set model uniforms
+        gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
+        gl.uniform3fv(modelColourLoc, model.colour);
+
+        // Bind model-mesh verticies
+        gl.bindBuffer( gl.ARRAY_BUFFER, model.mesh.vBuffer );
         var vPosition = gl.getAttribLocation( program, "vPosition" );
         gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0 );
         gl.enableVertexAttribArray( vPosition );
 
+        // Bind model-mesh normals
         gl.bindBuffer( gl.ARRAY_BUFFER, model.mesh.nBuffer );
-
         var vNormal = gl.getAttribLocation( program, "vNormal" );
         gl.vertexAttribPointer( vNormal, 3, gl.FLOAT, false, 0, 0 );
         gl.enableVertexAttribArray( vNormal );
 
-        gl.uniform3fv(modelColourLoc, model.colour);
-
-        var modelMatrix = mat4();
-
-        if (model.position) {
-            modelMatrix = mult(modelMatrix, translate(model.position));
-        } 
-
-        if (model.rotation) {
-            const [ x, y , z ] = model.rotation;
-            modelMatrix = mult(modelMatrix, rotateX(x));
-            modelMatrix = mult(modelMatrix, rotateY(y));
-            modelMatrix = mult(modelMatrix, rotateZ(z));
-        } 
-
-        if (model.scale) {
-            modelMatrix = mult(modelMatrix, scalem(model.scale));
-        } 
-        
-        const modelViewMatrix = mult( getViewMatrix(), modelMatrix );
-        gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
-
+        // Exectue mesh draw
         gl.drawArrays( gl.TRIANGLES, 0, model.mesh.vCount );
     });
 }
