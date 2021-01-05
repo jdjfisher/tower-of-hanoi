@@ -1,6 +1,6 @@
 
 var selectedDisk = null;
-var sourceStack = null;
+var selectedStack = null;
 var leftStack = [];
 var centreStack = [];
 var rightStack = [];
@@ -157,12 +157,12 @@ function keydownHandler(key)
             break;
 
         case 'w':
-
             eye = add( eye, getViewVector() );
             break;
 
         case 's':
             eye = subtract( eye, getViewVector() );
+            eye[1] = Math.max(eye[1], 0.4);
             break;
 
         case 'a':
@@ -179,6 +179,7 @@ function keydownHandler(key)
 
         case 'e':
             eye[1]--;
+            eye[1] = Math.max(eye[1], 0.4);
             break;
 
         case 'Enter':
@@ -187,7 +188,7 @@ function keydownHandler(key)
             break;
 
         case 'Escape':
-            sourceStack = null;
+            unselectDisk();
             break;
 
         case '1':
@@ -196,27 +197,37 @@ function keydownHandler(key)
             const stack = [leftStack, centreStack, rightStack][key - 1];
 
             // TODO: Cleanup
-            if (sourceStack) {
-                if (sourceStack.length && (!stack.length || stack[stack.length-1].transform.scale[0] > sourceStack[sourceStack.length-1].transform.scale[0])) {
-                    disk = sourceStack.pop();
-                    disk.transform.position[0] = (key - 2) * 2;
-                    disk.transform.position[1] = 0.25 + stack.length * 0.2;
-                    stack.push(disk);
-                }
-                sourceStack = null;
-            } else {                
-                sourceStack = stack;
+            if (selectedDisk) {
+                transferDisk(stack, key);
+                unselectDisk();
+            } else {   
+                selectDisk(stack);
             }
             break;
     }
 }
 
-function selectDisk()
+function selectDisk(stack)
 {
-  
+    selectedStack = stack;
+    selectedDisk = stack.pop();    
+    selectedDisk.transform.position[1] = 3;     
 }
 
-function transferDisk()
+function unselectDisk()
 {
+    if (selectedDisk && selectedStack) {
+        selectedDisk.transform.position[1] = 0.25 + selectedStack.length * 0.2;
+        selectedStack.push(selectedDisk);
+        selectedStack = null;
+        selectedDisk = null;
+    }
+}
 
+function transferDisk(stack, key)
+{
+    if (!stack.length || stack[stack.length-1].transform.scale[0] > selectedDisk.transform.scale[0]) {
+        selectedStack = stack;
+        selectedDisk.transform.position[0] = (key - 2) * 2;
+    }
 }
