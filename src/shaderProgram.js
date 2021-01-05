@@ -18,7 +18,7 @@ function initShaders(gl, vShaderName, fShaderName) {
 
 function getShader(gl, shaderName, type) {
     var shader = gl.createShader(type),
-        shaderScript = loadFileAJAX(shaderName);
+        shaderScript = loadFile(shaderName);
 
     if (!shaderScript) {
         alert(`Failed to find shader source: ${shaderName}`);
@@ -31,14 +31,6 @@ function getShader(gl, shaderName, type) {
         alert(gl.getShaderInfoLog(shader));
         return null;
     }
+
     return shader;
 }
-
-function loadFileAJAX(name) {
-    const xhr = new XMLHttpRequest();
-    const okStatus = document.location.protocol === 'file:' ? 0 : 200;
-    xhr.open('GET', name, false);
-    xhr.send(null);
-    return xhr.status == okStatus ? xhr.responseText : null;
-};
-

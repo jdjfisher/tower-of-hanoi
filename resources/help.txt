@@ -1,0 +1,1 @@
+To transfer a disk, first select the source and then the destination with 1, 2 & 3 (Left, Centre & Right respecitvly).

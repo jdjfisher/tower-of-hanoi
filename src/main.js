@@ -17,12 +17,6 @@ var projectionMatrixLoc;
 var models = {};
 var light = {};
 
-var sourceStack = null;
-var leftStack = [];
-var centreStack = [];
-var rightStack = [];
-
-
 window.onload = () =>
 {
     initElements();
@@ -50,7 +44,7 @@ function initOpenGL()
     gl.enable(gl.DEPTH_TEST);
 
     // Setup shader program
-    program = initShaders( gl, "shaders/main/vertex.glsl", "shaders/main/fragment.glsl" );
+    program = initShaders( gl, "resources/shaders/vertex/main.glsl", "resources/shaders/fragment/main.glsl" );
     gl.useProgram( program );
 
     // Create uniforms
@@ -68,178 +62,15 @@ function initOpenGL()
     } 
 }
 
-function initScene()
-{
-    // Initialise meshes
-    const tm = tetrahedronMesh();
-    const sm = sphereMesh(5);
-    const pm = planeMesh();
-    const cm = cubeMesh();
-
-    // Define light source
-    light = {
-        mesh: sm,
-        material: {
-            colour: white,
-            intensity: 3,
-        },
-        transform: {
-            position: vec3(0.0, 5.0, 0.5),
-            scale: vec3(0.3, 0.3, 0.3),
-        },
-    };
-
-    // Define models
-    models = {
-        xzPlane: {
-            mesh: pm,
-            material: {
-                colour: white,
-            },
-            transform: {
-                scale: vec3(100, 0, 100),
-            },
-        },
-        platform: {
-            mesh: cm,
-            material: {
-                colour: brown,
-                shininess: 0,
-            },
-            transform: {
-                scale: vec3(12, 0.25, 4),
-                position: vec3(0, 0.125, 0),
-            },
-        },
-        leftColumn: {
-            mesh: cm,
-            material: {
-                colour: brown,
-            },
-            transform: {
-                scale: vec3(0.2, 5, 0.2),
-                position: vec3(-2, 1.25, 0),
-            },
-        },
-        centreColumn: {
-            mesh: cm,
-            material: {
-                colour: brown,
-            },
-            transform: {
-                scale: vec3(0.2, 5, 0.2),
-                position: vec3(0, 1.25, 0),
-            },
-        },
-        rightColumn: {
-            mesh: cm,
-            material: {
-                colour: brown,
-            },
-            transform: {
-                scale: vec3(0.2, 5, 0.2),
-                position: vec3(2, 1.25, 0),
-            },
-        },
-        spinningCube: {
-            mesh: cm,
-            material: {
-                colour: blue,
-                shininess: 32,
-            },
-            transform: {
-                position: vec3(-3.0, 4.0, 0.0),
-                rotation: vec3(),
-            },
-        },
-        spinningPyramid: {
-            mesh: tm,
-            material: {
-                colour: green,
-                shininess: 128,
-            },
-            transform: {
-                position: vec3(2.5, 2.5, 1.5),
-                rotation: vec3(),
-                scale: vec3(0.5, 0.5, 0.5),
-            },
-        },
-    };
-
-    //
-    const scale = 0.4;
-    const count = 7;
-    const m = (count + 1)  * scale;
-
-    for (var i = 0; i < count; i++) {
-        const disk = {
-            mesh: cm,
-            material: {
-                colour: getRandomColour(),
-            },
-            transform: {
-                position: vec3(-2, 0.25 + i * scale / 2, 0.0),
-                scale: vec3(m - i * scale, scale, m - i * scale),
-            },
-        }
-
-        models[`disk${i}`] = disk;
-        leftStack.push(disk);
-    }
-}
-
 function initElements()
 {
-    window.addEventListener ('keydown', e => {
-        switch(e.key) {
-            case 'ArrowLeft':
-                prevCamera();
-                break;
-            case 'ArrowRight':
-                nextCamera();
-                break;
-            case 'w':
-                eye = add( eye, normalize( subtract( at, eye ) ) );
-                break;
-            case 's':
-                eye = subtract( eye, normalize( subtract( at, eye ) ) );
-                break;
-            case 'a':
-                eye = add( eye, cross( up, normalize( subtract( at, eye ) ) ) );
-                break;
-            case 'd':
-                eye = subtract( eye, cross( up, normalize( subtract( at, eye ) ) ) );
-                break;
-            case 'q':
-                eye[1]++;
-                break;
-            case 'e':
-                eye[1]--;
-                break;
+    // Keydown listener
+    window.addEventListener('keydown', e => keydownHandler(e.key));
 
-            case 'Escape':
-                sourceStack = null;
-                break;
-            case '1':
-            case '2':
-            case '3':
-                const stack = [leftStack, centreStack, rightStack][e.key - 1];
-
-                // TODO: Cleanup
-                if (sourceStack) {
-                    if (sourceStack.length && (!stack.length || stack[stack.length-1].transform.scale[0] > sourceStack[sourceStack.length-1].transform.scale[0])) {
-                        disk = sourceStack.pop();
-                        disk.transform.position[0] = (e.key - 2) * 2;
-                        disk.transform.position[1] = 0.25 + stack.length * 0.2;
-                        stack.push(disk);
-                    }
-                    sourceStack = null;
-                } else {                
-                    sourceStack = stack;
-                }
-                break;
-            }
-    }) ;
+    // Help button
+    document.getElementById('help-button').addEventListener('click', () => {
+        alert(loadFile('resources/help.txt'));
+    });
 }
 
 function mainLoop()
@@ -248,13 +79,6 @@ function mainLoop()
     render();
     
     requestAnimFrame( mainLoop );
-}
-
-function update()
-{
-    models.spinningCube.transform.rotation[0] += 0.5;
-    models.spinningCube.transform.rotation[1] += 1.0;
-    models.spinningPyramid.transform.rotation[1] += 1.0;
 }
 
 function render()

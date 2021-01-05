@@ -31,6 +31,10 @@ function prevCamera() {
   eye = cameraPositions[currentCamera]
 }
 
+function getViewVector() {
+  return normalize( subtract( at, eye ) );
+};
+
 function getViewMatrix() {
   return lookAt(eye, at , up);
 }
