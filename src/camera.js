@@ -7,11 +7,12 @@ const aspect = 1.0;
 
 // Preset camera positions
 const cameraPositions = [
-  vec3(4.0, 0.4, 0.0),
+  vec3(-1.1, 2.7, 7.6),
+  vec3(5.3, 4.4, 5.5),
+  vec3(0.8, 10.4, -1.0),
   vec3(-2.0, 3.0, 5.0),
   vec3(0.0, 0.5, -6.0),
   vec3(3.0, 7, -4.0),
-  vec3(0.0, 2.1, 0.001),
 ];
 
 // Camera view 

@@ -64,9 +64,18 @@ function initOpenGL()
 
 function initScene()
 {
+    // Initialise meshes
     const tm = tetrahedronMesh();
     const pm = planeMesh();
     const cm = cubeMesh();
+
+    // Define light source
+    light = {
+        colour: white,
+        mesh: cm,
+        position: vec3(0.0, 5.0, 0.5),
+        intensity: 3,
+    };
 
     // Define models
     models = {
@@ -76,7 +85,48 @@ function initScene()
                 colour: white,
             },
             transform: {
-                scale: vec3(10, 0, 10),
+                scale: vec3(100, 0, 100),
+            },
+        },
+        platform: {
+            mesh: cm,
+            material: {
+                colour: brown,
+                shininess: 0,
+            },
+            transform: {
+                scale: vec3(12, 0.25, 4),
+                position: vec3(0, 0.125, 0),
+            },
+        },
+        leftColumn: {
+            mesh: cm,
+            material: {
+                colour: brown,
+            },
+            transform: {
+                scale: vec3(0.2, 5, 0.2),
+                position: vec3(-2, 1.25, 0),
+            },
+        },
+        centreColumn: {
+            mesh: cm,
+            material: {
+                colour: brown,
+            },
+            transform: {
+                scale: vec3(0.2, 5, 0.2),
+                position: vec3(0, 1.25, 0),
+            },
+        },
+        rightColumn: {
+            mesh: cm,
+            material: {
+                colour: brown,
+            },
+            transform: {
+                scale: vec3(0.2, 5, 0.2),
+                position: vec3(2, 1.25, 0),
             },
         },
         spinningCube: {
@@ -86,29 +136,42 @@ function initScene()
                 shininess: 32,
             },
             transform: {
-                position: vec3(0.0, 2.0, 0.0),
+                position: vec3(-3.0, 4.0, 0.0),
                 rotation: vec3(),
             },
         },
-        pyramid: {
+        spinningPyramid: {
             mesh: tm,
             material: {
                 colour: green,
                 shininess: 128,
             },
             transform: {
-                position: vec3(2.0, 2.5, 1.0),
+                position: vec3(2.5, 2.5, 1.5),
+                rotation: vec3(),
                 scale: vec3(0.5, 0.5, 0.5),
             },
         },
     };
 
-    // Define light source
-    light = {
-        colour: white,
-        mesh: cm,
-        position: vec3(0.0, 5.0, 0.0),
-        intensity: 3,
+    //
+    const scale = 0.4;
+    const count = 7;
+    const m = (count + 1)  * scale;
+
+    for (var i = count; i > 0; i--) {
+        const disk = {
+            mesh: cm,
+            material: {
+                colour: getRandomColour(),
+            },
+            transform: {
+                position: vec3(0.0, i * scale / 2, 0.0),
+                scale: vec3(m - i * scale, scale, m - i * scale),
+            },
+        }
+
+        models[`disk${i}`] = disk;
     }
 }
 
@@ -156,6 +219,7 @@ function update()
 {
     models.spinningCube.transform.rotation[0] += 0.5;
     models.spinningCube.transform.rotation[1] += 1.0;
+    models.spinningPyramid.transform.rotation[1] += 1.0;
 }
 
 function render()
@@ -164,7 +228,7 @@ function render()
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // Set global uniforms
-    gl.uniform1f( ambientIntensityLoc, 0.1 );
+    gl.uniform1f( ambientIntensityLoc, 0.2 );
     gl.uniform3fv( lightLoc.colour, light.colour );
     gl.uniform3fv( lightLoc.position, light.position );
     gl.uniform1f( lightLoc.intensity, light.intensity );
