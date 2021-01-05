@@ -1,9 +1,7 @@
 
+var state = 0;
 var selectedDisk = null;
-var selectedStack = null;
-var leftStack = [];
-var centreStack = [];
-var rightStack = [];
+var selectedTower = null;
 
 function initScene()
 {
@@ -57,6 +55,7 @@ function initScene()
                 scale: vec3(0.2, 5, 0.2),
                 position: vec3(-2, 1.25, 0),
             },
+            stack: [],
         },
         centreTower: {
             mesh: cm,
@@ -67,6 +66,7 @@ function initScene()
                 scale: vec3(0.2, 5, 0.2),
                 position: vec3(0, 1.25, 0),
             },
+            stack: [],
         },
         rightTower: {
             mesh: cm,
@@ -77,6 +77,7 @@ function initScene()
                 scale: vec3(0.2, 5, 0.2),
                 position: vec3(2, 1.25, 0),
             },
+            stack: [],
         },
         spinningCube: {
             mesh: cm,
@@ -133,7 +134,7 @@ function initScene()
         }
 
         models[`disk${i}`] = disk;
-        leftStack.push(disk);
+        models.leftTower.stack.push(disk);
     }
 }
 
@@ -143,6 +144,36 @@ function update()
     models.spinningCube.transform.rotation[1] += 1.0;
     models.spinningPyramid.transform.rotation[1] += 1.0;
     models.spinningBall.transform.rotation[1] += 1.0;
+
+    switch (state) {
+        case 1:
+            if (selectedDisk.transform.position[1] < 3) {
+                selectedDisk.transform.position[1] += 0.1;
+            } else {
+                state = 2;
+            }
+            break;    
+        case 3:
+            const delta = selectedTower.transform.position[0] - selectedDisk.transform.position[0];
+
+            if (Math.abs(delta) > 0.2) {
+                selectedDisk.transform.position[0] += Math.sign(delta) * 0.1; 
+            } else {
+                selectedDisk.transform.position[0] = selectedTower.transform.position[0];
+                unselectDisk();
+            }
+            break;
+        case 4:
+            if (selectedDisk.transform.position[1] > 0.25 + selectedTower.stack.length * 0.2) {
+                selectedDisk.transform.position[1] -= 0.1; 
+            } else {
+                state = 0;
+                selectedTower.stack.push(selectedDisk);
+                selectedTower = null;
+                selectedDisk = null;
+            }
+            break;
+    }
 }
 
 function keydownHandler(key) 
@@ -188,46 +219,48 @@ function keydownHandler(key)
             break;
 
         case 'Escape':
-            unselectDisk();
+            if (state == 1 || state == 2) {
+                unselectDisk();
+            }
             break;
 
         case '1':
         case '2':
         case '3':
-            const stack = [leftStack, centreStack, rightStack][key - 1];
+            const tower = [models.leftTower, models.centreTower, models.rightTower][key - 1];
 
-            // TODO: Cleanup
-            if (selectedDisk) {
-                transferDisk(stack, key);
-                unselectDisk();
-            } else {   
-                selectDisk(stack);
+            switch (state) {
+                case 0:
+                    selectDisk(tower);
+                    break;
+
+                case 2:
+                    transferDisk(tower);
+                    break;
             }
-            break;
     }
 }
 
-function selectDisk(stack)
+function selectDisk(tower)
 {
-    selectedStack = stack;
-    selectedDisk = stack.pop();    
-    selectedDisk.transform.position[1] = 3;     
+    if (tower.stack.length) {
+        selectedTower = tower;
+        selectedDisk = tower.stack.pop();
+        state = 1;
+    }
 }
 
 function unselectDisk()
 {
-    if (selectedDisk && selectedStack) {
-        selectedDisk.transform.position[1] = 0.25 + selectedStack.length * 0.2;
-        selectedStack.push(selectedDisk);
-        selectedStack = null;
-        selectedDisk = null;
-    }
+    state = 4;
 }
 
-function transferDisk(stack, key)
+function transferDisk(tower)
 {
-    if (!stack.length || stack[stack.length-1].transform.scale[0] > selectedDisk.transform.scale[0]) {
-        selectedStack = stack;
-        selectedDisk.transform.position[0] = (key - 2) * 2;
+    if (!tower.stack.length || tower.stack[tower.stack.length-1].transform.scale[0] > selectedDisk.transform.scale[0]) {
+        selectedTower = tower;
+        state = 3;
+    } else {
+        unselectDisk();
     }
 }
