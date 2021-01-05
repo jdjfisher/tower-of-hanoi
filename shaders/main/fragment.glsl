@@ -6,10 +6,12 @@ struct Light {
     float intensity;
 };
 
-uniform Light light;
 uniform vec3 modelColour;
+uniform float modelShininess;
+uniform Light light;
 uniform vec3 viewPosition;
 uniform float ambientIntensity;
+
 
 varying vec3 fNormal;
 varying vec3 fPosition;
@@ -24,7 +26,7 @@ void main()
 
     vec3 viewDirection = normalize(viewPosition - fPosition);
     vec3 reflectDirection = reflect(-lightDirection, fNormal);  
-    vec3 specular = pow(max(dot(viewDirection, reflectDirection), 0.0), 32.0) * light.colour * light.intensity;
+    vec3 specular = pow(max(dot(viewDirection, reflectDirection), 0.0), modelShininess) * light.colour * light.intensity;
 
     vec3 result = (ambient + diffuse + specular) * modelColour;
 

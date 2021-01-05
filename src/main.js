@@ -6,6 +6,7 @@ var gl;
 // Uniforms
 var lightLoc;
 var modelColourLoc;
+var modelShininessLoc;
 var viewPositionLoc;
 var ambientIntensityLoc;
 var modelMatrixLoc;
@@ -52,6 +53,7 @@ function initOpenGL()
     viewMatrixLoc = gl.getUniformLocation( program, "viewMatrix" );
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
     modelColourLoc = gl.getUniformLocation(program, "modelColour");
+    modelShininessLoc = gl.getUniformLocation(program, "modelShininess");
     ambientIntensityLoc = gl.getUniformLocation(program, "ambientIntensity");
     lightLoc = {
         colour: gl.getUniformLocation(program, "light.colour"),
@@ -70,20 +72,34 @@ function initScene()
     models = {
         xzPlane: {
             mesh: pm,
-            colour: white,
-            scale: vec3(10, 0, 10),
+            material: {
+                colour: white,
+            },
+            transform: {
+                scale: vec3(10, 0, 10),
+            },
         },
         spinningCube: {
             mesh: cm,
-            colour: blue,
-            position: vec3(0.0, 2.0, 0.0),
-            rotation: vec3(),
+            material: {
+                colour: blue,
+                shininess: 32,
+            },
+            transform: {
+                position: vec3(0.0, 2.0, 0.0),
+                rotation: vec3(),
+            },
         },
         pyramid: {
             mesh: tm,
-            colour: green,
-            position: vec3(2.0, 2.5, 1.0),
-            scale: vec3(0.5, 0.5, 0.5),
+            material: {
+                colour: green,
+                shininess: 128,
+            },
+            transform: {
+                position: vec3(2.0, 2.5, 1.0),
+                scale: vec3(0.5, 0.5, 0.5),
+            },
         },
     };
 
@@ -138,8 +154,8 @@ function mainLoop()
 
 function update()
 {
-    models.spinningCube.rotation[0] += 0.5;
-    models.spinningCube.rotation[1] += 1.0;
+    models.spinningCube.transform.rotation[0] += 0.5;
+    models.spinningCube.transform.rotation[1] += 1.0;
 }
 
 function render()
@@ -148,12 +164,12 @@ function render()
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // Set global uniforms
-    gl.uniform3fv( viewPositionLoc, eye );
     gl.uniform1f( ambientIntensityLoc, 0.1 );
     gl.uniform3fv( lightLoc.colour, light.colour );
     gl.uniform3fv( lightLoc.position, light.position );
     gl.uniform1f( lightLoc.intensity, light.intensity );
-
+    
+    gl.uniform3fv( viewPositionLoc, eye );
     gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten( getProjectionMatrix() ) );
     gl.uniformMatrix4fv( viewMatrixLoc, false, flatten( getViewMatrix() ) );
 
@@ -163,18 +179,19 @@ function render()
         // Compute model matrix
         var modelMatrix = mat4();
 
-        if (model.position) 
-            modelMatrix = mult(modelMatrix, translate(model.position));
+        if (model.transform.position) 
+            modelMatrix = mult(modelMatrix, translate(model.transform.position));
 
-        if (model.rotation) 
-            modelMatrix = mult(modelMatrix, rotateEuler(...model.rotation));
+        if (model.transform.rotation) 
+            modelMatrix = mult(modelMatrix, rotateEuler(...model.transform.rotation));
 
-        if (model.scale) 
-            modelMatrix = mult(modelMatrix, scalem(model.scale));
+        if (model.transform.scale) 
+            modelMatrix = mult(modelMatrix, scalem(model.transform.scale));
          
         // Set model uniforms
         gl.uniformMatrix4fv( modelMatrixLoc, false, flatten(modelMatrix) );
-        gl.uniform3fv(modelColourLoc, model.colour);
+        gl.uniform3fv(modelColourLoc, model.material.colour);
+        gl.uniform1f(modelShininessLoc, model.material.shininess || 32);
 
         // Render the model mesh
         renderMesh(model.mesh);
