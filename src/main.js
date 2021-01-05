@@ -17,6 +17,12 @@ var projectionMatrixLoc;
 var models = {};
 var light = {};
 
+var sourceStack = null;
+var leftStack = [];
+var centreStack = [];
+var rightStack = [];
+
+
 window.onload = () =>
 {
     initElements();
@@ -159,19 +165,20 @@ function initScene()
     const count = 7;
     const m = (count + 1)  * scale;
 
-    for (var i = count; i > 0; i--) {
+    for (var i = 0; i < count; i++) {
         const disk = {
             mesh: cm,
             material: {
                 colour: getRandomColour(),
             },
             transform: {
-                position: vec3(0.0, i * scale / 2, 0.0),
+                position: vec3(-2, 0.25 + i * scale / 2, 0.0),
                 scale: vec3(m - i * scale, scale, m - i * scale),
             },
         }
 
         models[`disk${i}`] = disk;
+        leftStack.push(disk);
     }
 }
 
@@ -203,7 +210,29 @@ function initElements()
             case 'e':
                 eye[1]--;
                 break;
-        }
+
+            case 'Escape':
+                sourceStack = null;
+                break;
+            case '1':
+            case '2':
+            case '3':
+                const stack = [leftStack, centreStack, rightStack][e.key - 1];
+
+                // TODO: Cleanup
+                if (sourceStack) {
+                    if (sourceStack.length && (!stack.length || stack[stack.length-1].transform.scale[0] > sourceStack[sourceStack.length-1].transform.scale[0])) {
+                        disk = sourceStack.pop();
+                        disk.transform.position[0] = (e.key - 2) * 2;
+                        disk.transform.position[1] = 0.25 + stack.length * 0.2;
+                        stack.push(disk);
+                    }
+                    sourceStack = null;
+                } else {                
+                    sourceStack = stack;
+                }
+                break;
+            }
     }) ;
 }
 
