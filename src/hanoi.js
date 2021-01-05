@@ -3,6 +3,14 @@ var state = 0;
 var selectedDisk = null;
 var selectedTower = null;
 
+const diskCount = 7;
+const diskHeight = 0.2;
+const diskInnerRadius = 0.1;
+const platformThickness = 0.1;
+
+const g0 = diskHeight / 2 + platformThickness;
+
+
 function initScene()
 {
     // Initialise meshes
@@ -42,8 +50,8 @@ function initScene()
                 shininess: 0,
             },
             transform: {
-                scale: vec3(12, 0.25, 4),
-                position: vec3(0, 0.125, 0),
+                scale: vec3(6, platformThickness, 2),
+                position: vec3(0, platformThickness / 2, 0),
             },
         },
         leftTower: {
@@ -52,7 +60,7 @@ function initScene()
                 colour: brown,
             },
             transform: {
-                scale: vec3(0.2, 5, 0.2),
+                scale: vec3(0.1, 2.5, 0.1),
                 position: vec3(-2, 1.25, 0),
             },
             stack: [],
@@ -63,7 +71,7 @@ function initScene()
                 colour: brown,
             },
             transform: {
-                scale: vec3(0.2, 5, 0.2),
+                scale: vec3(0.1, 2.5, 0.1),
                 position: vec3(0, 1.25, 0),
             },
             stack: [],
@@ -74,7 +82,7 @@ function initScene()
                 colour: brown,
             },
             transform: {
-                scale: vec3(0.2, 5, 0.2),
+                scale: vec3(0.1, 2.5, 0.1),
                 position: vec3(2, 1.25, 0),
             },
             stack: [],
@@ -88,6 +96,7 @@ function initScene()
             transform: {
                 position: vec3(-3.0, 4.0, 0.0),
                 rotation: vec3(),
+                scale: vec3(0.5, 0.5, 0.5),
             },
         },
         spinningPyramid: {
@@ -117,19 +126,17 @@ function initScene()
     };
 
     //
-    const scale = 0.4;
-    const count = 7;
-    const m = (count + 1)  * scale;
+    for (var i = 0; i < diskCount; i++) {
+        const outerRadius = diskInnerRadius + (diskCount - i) * 0.1;
 
-    for (var i = 0; i < count; i++) {
         const disk = {
-            mesh: cm,
+            id: i,
+            mesh: diskMesh(outerRadius, diskInnerRadius, diskHeight),
             material: {
                 colour: getRandomColour(),
             },
             transform: {
-                position: vec3(-2, 0.25 + i * scale / 2, 0.0),
-                scale: vec3(m - i * scale, scale, m - i * scale),
+                position: vec3(-2, i * diskHeight + g0, 0.0),
             },
         }
 
@@ -164,7 +171,7 @@ function update()
             }
             break;
         case 4:
-            if (selectedDisk.transform.position[1] > 0.25 + selectedTower.stack.length * 0.2) {
+            if (selectedDisk.transform.position[1] > selectedTower.stack.length * diskHeight + g0) {
                 selectedDisk.transform.position[1] -= 0.1; 
             } else {
                 state = 0;
@@ -193,7 +200,7 @@ function keydownHandler(key)
 
         case 's':
             eye = subtract( eye, getViewVector() );
-            eye[1] = Math.max(eye[1], 0.4);
+            eye[1] = Math.max(eye[1], platformThickness);
             break;
 
         case 'a':
@@ -210,7 +217,7 @@ function keydownHandler(key)
 
         case 'e':
             eye[1]--;
-            eye[1] = Math.max(eye[1], 0.4);
+            eye[1] = Math.max(eye[1], platformThickness);
             break;
 
         case 'Enter':
@@ -257,7 +264,7 @@ function unselectDisk()
 
 function transferDisk(tower)
 {
-    if (!tower.stack.length || tower.stack[tower.stack.length-1].transform.scale[0] > selectedDisk.transform.scale[0]) {
+    if (!tower.stack.length || tower.stack[tower.stack.length-1].id < selectedDisk.id) {
         selectedTower = tower;
         state = 3;
     } else {

@@ -1,7 +1,7 @@
 
 function renderMesh(mesh) 
 {
-    // Bind model-mesh verticies
+    // Bind model-mesh vertices
     gl.bindBuffer( gl.ARRAY_BUFFER, mesh.vBuffer );
     var vPosition = gl.getAttribLocation( program, "vPosition" );
     gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0 );
@@ -64,14 +64,14 @@ function triangulateQuad(a, b, c, d)
 function cubeMesh() 
 {
   const vertices = [
-    vec4(-0.25, -0.25, 0.25, 1.0),
-    vec4(-0.25, 0.25, 0.25, 1.0),
-    vec4(0.25, 0.25, 0.25, 1.0),
-    vec4(0.25, -0.25, 0.25, 1.0),
-    vec4(-0.25, -0.25, -0.25, 1.0),
-    vec4(-0.25, 0.25, -0.25, 1.0),
-    vec4(0.25, 0.25, -0.25, 1.0),
-    vec4(0.25, -0.25, -0.25, 1.0),
+    vec4(-0.5, -0.5, 0.5, 1.0),
+    vec4(-0.5, 0.5, 0.5, 1.0),
+    vec4(0.5, 0.5, 0.5, 1.0),
+    vec4(0.5, -0.5, 0.5, 1.0),
+    vec4(-0.5, -0.5, -0.5, 1.0),
+    vec4(-0.5, 0.5, -0.5, 1.0),
+    vec4(0.5, 0.5, -0.5, 1.0),
+    vec4(0.5, -0.5, -0.5, 1.0),
   ];
 
   const faces = [
@@ -162,5 +162,56 @@ function sphereMesh(divisions=5)
       ])
     }
   }
+}
+
+function diskMesh(or, ir, h, n=50)
+{
+  var vertices = [];
+  var faces = [];
+  
+  const deltaTheta = 2 * Math.PI / n;
+  const hh = h / 2;
+  var theta = 0;
+
+  for (var i = 0; i < n; i++) {
+      sinT = Math.sin(theta);
+      cosT = Math.cos(theta);
+      theta -= deltaTheta;
+
+      vertices[i]           = vec4(ir * cosT, hh, ir * sinT, 1);
+      vertices[i + n]       = vec4(or * cosT, hh, or * sinT, 1);
+      vertices[i + (2 * n)] = vec4(ir * cosT, -hh, ir * sinT, 1);
+      vertices[i + (3 * n)] = vec4(or * cosT, -hh, or * sinT, 1);
+  }
+
+  // Top & Bottom faces
+  for (var i = 0; i < n - 1; i++) {
+      faces.push(triangulateQuad( i, i + n, i + 1 + n, i + 1 ));
+
+      const j = i + 2 * n;
+      faces.push(triangulateQuad( j + 1, j + 1 + n, j + n, j ));
+  }
+
+  // Top & Bottom joiner face
+  faces.push(triangulateQuad( n - 1, 2 * n - 1, n, 0 ));
+  faces.push(triangulateQuad( 2 * n, 3 * n, 4 * n - 1, 3 * n - 1 ));
+
+  // Outer faces
+  for (var i = 0; i < n - 1; i++) {
+      faces.push(triangulateQuad( i + n, i + 3 * n, i + 1 + 3 * n, i + 1 + n ));
+  }
+
+  // Outer join face
+  faces.push(triangulateQuad( 2 * n - 1, 4 * n - 1, 3 * n, n ));
+
+  // Inner faces
+  for (var i = 0; i < n - 1; i++) {
+    faces.push(triangulateQuad( i + 1, i + 1 + 2 * n, i + 2 * n, i ));
+  }
+
+  // Inner join face
+  faces.push(triangulateQuad(  0, 2 * n, 3 * n - 1, n - 1 ));
+
+  return createMesh( vertices, faces );
 }
 
