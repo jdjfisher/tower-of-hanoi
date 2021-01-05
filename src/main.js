@@ -62,23 +62,27 @@ function initOpenGL()
 
 function initScene()
 {
+    const tm = tetrahedronMesh();
+    const pm = planeMesh();
+    const cm = cubeMesh();
+
     // Define models
     models = {
         xzPlane: {
-            mesh: planeMesh(),
+            mesh: pm,
             colour: white,
             scale: vec3(10, 0, 10),
         },
         spinningCube: {
-            mesh: cubeMesh(),
+            mesh: cm,
             colour: blue,
             position: vec3(0.0, 2.0, 0.0),
             rotation: vec3(),
         },
         pyramid: {
-            mesh: tetrahedronMesh(),
+            mesh: tm,
             colour: green,
-            position: vec3(1.0, 0.5, 1.0),
+            position: vec3(2.0, 2.5, 1.0),
             scale: vec3(0.5, 0.5, 0.5),
         },
     };
@@ -86,7 +90,8 @@ function initScene()
     // Define light source
     light = {
         colour: white,
-        position: vec3(0.0, 3.0, 0.0),
+        mesh: cm,
+        position: vec3(0.0, 5.0, 0.0),
         intensity: 3,
     }
 }
@@ -152,9 +157,6 @@ function render()
     gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten( getProjectionMatrix() ) );
     gl.uniformMatrix4fv( viewMatrixLoc, false, flatten( getViewMatrix() ) );
 
-    // Draw light mesh
-    // TODO: ...
-
     // Draw model meshes
     Object.values(models).forEach(model => {
 
@@ -174,19 +176,13 @@ function render()
         gl.uniformMatrix4fv( modelMatrixLoc, false, flatten(modelMatrix) );
         gl.uniform3fv(modelColourLoc, model.colour);
 
-        // Bind model-mesh verticies
-        gl.bindBuffer( gl.ARRAY_BUFFER, model.mesh.vBuffer );
-        var vPosition = gl.getAttribLocation( program, "vPosition" );
-        gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0 );
-        gl.enableVertexAttribArray( vPosition );
-
-        // Bind model-mesh normals
-        gl.bindBuffer( gl.ARRAY_BUFFER, model.mesh.nBuffer );
-        var vNormal = gl.getAttribLocation( program, "vNormal" );
-        gl.vertexAttribPointer( vNormal, 3, gl.FLOAT, false, 0, 0 );
-        gl.enableVertexAttribArray( vNormal );
-
-        // Exectue mesh draw
-        gl.drawArrays( gl.TRIANGLES, 0, model.mesh.vCount );
+        // Render the model mesh
+        renderMesh(model.mesh);
     });
+
+    // Draw light mesh
+    gl.uniform1f( ambientIntensityLoc, 1.0 );
+    gl.uniformMatrix4fv( modelMatrixLoc, false, flatten( translate( light.position ) ) );
+    gl.uniform3fv(modelColourLoc, light.colour);
+    renderMesh(light.mesh);
 }

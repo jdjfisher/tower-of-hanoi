@@ -1,4 +1,22 @@
 
+function renderMesh(mesh) 
+{
+    // Bind model-mesh verticies
+    gl.bindBuffer( gl.ARRAY_BUFFER, mesh.vBuffer );
+    var vPosition = gl.getAttribLocation( program, "vPosition" );
+    gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vPosition );
+
+    // Bind model-mesh normals
+    gl.bindBuffer( gl.ARRAY_BUFFER, mesh.nBuffer );
+    var vNormal = gl.getAttribLocation( program, "vNormal" );
+    gl.vertexAttribPointer( vNormal, 3, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vNormal );
+
+    // Exectue mesh draw
+    gl.drawArrays( gl.TRIANGLES, 0, mesh.vCount );
+}
+
 function createMesh(vertices, faces)
 {
     const faceNormals = calcNormals( vertices, faces );
@@ -28,7 +46,8 @@ function createMesh(vertices, faces)
     };
 }
 
-function calcNormals(vertices, faces) {
+function calcNormals(vertices, faces) 
+{
   return faces.map(face => {
     const edge1 = subtract( vertices[face[1]], vertices[face[0]] );
     const edge2 = subtract( vertices[face[2]], vertices[face[0]] );
@@ -37,11 +56,13 @@ function calcNormals(vertices, faces) {
   });
 } 
 
-function triangulateQuad(a, b, c, d) {
+function triangulateQuad(a, b, c, d) 
+{
   return [a, b, c, a, c, d];
 }
 
-function cubeMesh() {
+function cubeMesh() 
+{
   const vertices = [
     vec4(-0.25, -0.25, 0.25, 1.0),
     vec4(-0.25, 0.25, 0.25, 1.0),
@@ -65,7 +86,8 @@ function cubeMesh() {
   return createMesh( vertices, faces );
 }
 
-function planeMesh() {
+function planeMesh() 
+{
   const vertices = [
     vec4(-0.5, 0, -0.5, 1),
     vec4(0.5, 0, -0.5, 1),
@@ -78,7 +100,8 @@ function planeMesh() {
   return createMesh( vertices, [ face ] );
 }
 
-function tetrahedronMesh() {
+function tetrahedronMesh() 
+{
   const vertices = [
     vec4(0, 0, -1, 1),
     vec4(0, 0.942809, 0.333333, 1),
