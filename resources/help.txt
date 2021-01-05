@@ -1,1 +1,1 @@
-To transfer a disk, first select the source and then the destination with 1, 2 & 3 (Left, Centre & Right respecitvly). Cycle through camera positions with the arrow keys.
+To transfer a disk, first select the source tower and then the destination tower with 1, 2 & 3 (Left, Centre & Right respecitvly). Preset camera positions can be cycled with the arrow keys or use W, A, S, D, Q & E to navigate.

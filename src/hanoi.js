@@ -155,7 +155,7 @@ function update()
     switch (state) {
         case 1:
             if (selectedDisk.transform.position[1] < 3) {
-                selectedDisk.transform.position[1] += 0.1;
+                selectedDisk.transform.position[1] += 0.07;
             } else {
                 state = 2;
             }
@@ -164,7 +164,7 @@ function update()
             const delta = selectedTower.transform.position[0] - selectedDisk.transform.position[0];
 
             if (Math.abs(delta) > 0.2) {
-                selectedDisk.transform.position[0] += Math.sign(delta) * 0.1; 
+                selectedDisk.transform.position[0] += Math.sign(delta) * 0.07; 
             } else {
                 selectedDisk.transform.position[0] = selectedTower.transform.position[0];
                 unselectDisk();
@@ -172,7 +172,7 @@ function update()
             break;
         case 4:
             if (selectedDisk.transform.position[1] > selectedTower.stack.length * diskHeight + g0) {
-                selectedDisk.transform.position[1] -= 0.1; 
+                selectedDisk.transform.position[1] -= 0.07; 
             } else {
                 state = 0;
                 selectedTower.stack.push(selectedDisk);
