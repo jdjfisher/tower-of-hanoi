@@ -19,6 +19,7 @@ const States = Object.freeze({
 });
 
 var playerMoves = 0;
+var completed = false;
 var selectedDisk = null;
 var selectedTower = null;
 var state = States.SELECTING;
@@ -140,9 +141,9 @@ function initScene()
       },
     };
 
-    // Create the disks
     for (var i = 0; i < diskCount; i++) {
 
+        // Create a the disk 
         const disk = {
             id: i,
             mesh: tubeMesh(diskInnerRadius + (diskCount - i) * 0.1, diskInnerRadius, diskHeight),
@@ -154,7 +155,10 @@ function initScene()
             },
         }
 
+        // Register the disk in the scene models
         models[`disk${i}`] = disk;
+
+        // Push the disk on to the left tower
         models.leftTower.stack.push(disk);
     }
 }
@@ -190,7 +194,7 @@ function update()
                 state = States.LOWERING;
             }
             break;
-            
+
         case States.LOWERING:
             if (selectedDisk.transform.position[1] > selectedTower.stack.length * diskHeight + g0) {
                 selectedDisk.transform.position[1] -= step; 
@@ -200,13 +204,22 @@ function update()
                 selectedTower = null;
                 selectedDisk = null;
                 state = States.SELECTING;
+
+                // Check if all the disks are on either the centre or right tower
+                if (models.centreTower.stack.length === diskCount || models.centreTower.stack.length === diskCount) {
+                  completed = true;
+                }
             }
             break;
     }
 
-    // Update the document
-    document.getElementById('moves').textContent = playerMoves;
-    document.getElementById('timer').textContent = (new Date(new Date() - startTimeStamp)).toISOString().substr(14, 5);
+    if (completed) {
+      // TODO: Something ...
+    } else {
+      // Update the document while not completed
+      document.getElementById('moves').textContent = playerMoves;
+      document.getElementById('timer').textContent = (new Date(new Date() - startTimeStamp)).toISOString().substr(14, 5);
+    }
 }
 
 function keydownHandler(key) 
@@ -244,11 +257,6 @@ function keydownHandler(key)
         case 'e':
             eye[1]--;
             eye[1] = Math.max(eye[1], platformThickness); // Force camera to stay above xy-plane
-            break;
-
-        case 'Enter':
-            // Disco mode
-            light.material.colour = getRandomColour();
             break;
 
         case 'Escape':
