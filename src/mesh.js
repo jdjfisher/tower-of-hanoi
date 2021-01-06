@@ -188,7 +188,7 @@ function sphereMesh(divisions=5)
   }
 }
 
-function diskMesh(or, ir, h, n=50)
+function tubeMesh(or, ir, h, n=50)
 {
   var vertices = [];
   var faces = [];
@@ -236,6 +236,50 @@ function diskMesh(or, ir, h, n=50)
 
   // Inner join face
   faces.push(triangulateQuad(  0, 2 * n, 3 * n - 1, n - 1 ));
+
+  return createMesh( vertices, faces );
+}
+
+function cylinderMesh(n=50)
+{
+  var vertices = [];
+  var faces = [];
+  
+  const deltaTheta = 2 * Math.PI / n;
+  var theta = 0;
+
+  // Generate verticies
+  for (var i = 0; i < n; i++) {
+      sinT = Math.sin(theta);
+      cosT = Math.cos(theta);
+      theta -= deltaTheta;
+
+      vertices[i]     = vec4(cosT, 0.5, sinT, 1);
+      vertices[i + n] = vec4(cosT, -0.5, sinT, 1);
+  }
+
+  vertices[ 2 * n ] = vec4(0, 0.5, 0, 1);
+  vertices[ 2 * n + 1 ] = vec4(0, -0.5, 0, 1);
+
+  // Top & Bottom faces
+  for (var i = 0; i < n - 1; i++) {
+      faces.push([ 2 * n, i, i + 1 ]);
+
+      const j = i + n;
+      faces.push([ j + 1, j, 2 * n + 1]);
+  }
+
+  // Top & Bottom joiner face
+  faces.push([ 2 * n, n - 1, 0 ]);
+  faces.push([ n, 2 * n - 1, 2 * n + 1 ]);
+
+  // Outer faces
+  for (var i = 0; i < n - 1; i++) {
+      faces.push(triangulateQuad( i, i + n, i + 1 + n, i + 1 ));
+  }
+
+  // Outer join face
+  faces.push(triangulateQuad(n - 1, 2 * n - 1, n, 0 ));
 
   return createMesh( vertices, faces );
 }

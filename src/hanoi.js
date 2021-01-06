@@ -5,8 +5,12 @@ var selectedTower = null;
 
 const diskCount = 7;
 const diskHeight = 0.2;
-const diskInnerRadius = 0.1;
+const diskInnerRadius = 0.07;
+
 const platformThickness = 0.1;
+
+const towerRadius = diskInnerRadius - 0.01;
+const towerHeight = (diskCount + 4) * diskHeight;
 
 const g0 = diskHeight / 2 + platformThickness;
 
@@ -15,6 +19,7 @@ function initScene()
 {
     // Initialise meshes
     const tm = tetrahedronMesh();
+    const cym = cylinderMesh();
     const sm = sphereMesh(5);
     const pm = planeMesh();
     const cm = cubeMesh();
@@ -55,35 +60,35 @@ function initScene()
             },
         },
         leftTower: {
-            mesh: cm,
+            mesh: cym,
             material: {
                 colour: brown,
             },
             transform: {
-                scale: vec3(0.1, 2.5, 0.1),
-                position: vec3(-2, 1.25, 0),
+                scale: vec3(towerRadius, towerHeight, towerRadius),
+                position: vec3(-2, towerHeight / 2, 0),
             },
             stack: [],
         },
         centreTower: {
-            mesh: cm,
+            mesh: cym,
             material: {
                 colour: brown,
             },
             transform: {
-                scale: vec3(0.1, 2.5, 0.1),
-                position: vec3(0, 1.25, 0),
+                scale: vec3(towerRadius, towerHeight, towerRadius),
+                position: vec3(0, towerHeight / 2, 0),
             },
             stack: [],
         },
         rightTower: {
-            mesh: cm,
+            mesh: cym,
             material: {
                 colour: brown,
             },
             transform: {
-                scale: vec3(0.1, 2.5, 0.1),
-                position: vec3(2, 1.25, 0),
+                scale: vec3(towerRadius, towerHeight, towerRadius),
+                position: vec3(2, towerHeight / 2, 0),
             },
             stack: [],
         },
@@ -131,7 +136,7 @@ function initScene()
 
         const disk = {
             id: i,
-            mesh: diskMesh(outerRadius, diskInnerRadius, diskHeight),
+            mesh: tubeMesh(outerRadius, diskInnerRadius, diskHeight),
             material: {
                 colour: getRandomColour(),
             },
@@ -152,10 +157,12 @@ function update()
     models.spinningPyramid.transform.rotation[1] += 1.0;
     models.spinningBall.transform.rotation[1] += 1.0;
 
+    const step = 0.07;
+
     switch (state) {
         case 1:
-            if (selectedDisk.transform.position[1] < 3) {
-                selectedDisk.transform.position[1] += 0.07;
+            if (selectedDisk.transform.position[1] < towerHeight + 2 * diskHeight) {
+                selectedDisk.transform.position[1] += step;
             } else {
                 state = 2;
             }
@@ -164,7 +171,7 @@ function update()
             const delta = selectedTower.transform.position[0] - selectedDisk.transform.position[0];
 
             if (Math.abs(delta) > 0.2) {
-                selectedDisk.transform.position[0] += Math.sign(delta) * 0.07; 
+                selectedDisk.transform.position[0] += Math.sign(delta) * step; 
             } else {
                 selectedDisk.transform.position[0] = selectedTower.transform.position[0];
                 unselectDisk();
@@ -172,12 +179,13 @@ function update()
             break;
         case 4:
             if (selectedDisk.transform.position[1] > selectedTower.stack.length * diskHeight + g0) {
-                selectedDisk.transform.position[1] -= 0.07; 
+                selectedDisk.transform.position[1] -= step; 
             } else {
-                state = 0;
+                selectedDisk.transform.position[1] = selectedTower.stack.length * diskHeight + g0
                 selectedTower.stack.push(selectedDisk);
                 selectedTower = null;
                 selectedDisk = null;
+                state = 0;
             }
             break;
     }
@@ -200,7 +208,7 @@ function keydownHandler(key)
 
         case 's':
             eye = subtract( eye, getViewVector() );
-            eye[1] = Math.max(eye[1], platformThickness);
+            eye[1] = Math.max(eye[1], platformThickness); // Force camera to stay above xy-plane
             break;
 
         case 'a':
@@ -217,7 +225,7 @@ function keydownHandler(key)
 
         case 'e':
             eye[1]--;
-            eye[1] = Math.max(eye[1], platformThickness);
+            eye[1] = Math.max(eye[1], platformThickness); // Force camera to stay above xy-plane
             break;
 
         case 'Enter':
