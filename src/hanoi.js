@@ -28,7 +28,7 @@ function initScene()
     // Initialise meshes
     const tm = tetrahedronMesh();
     const cym = cylinderMesh();
-    const sm = sphereMesh(5);
+    const sm = sphereMesh();
     const pm = planeMesh();
     const cm = cubeMesh();
 
