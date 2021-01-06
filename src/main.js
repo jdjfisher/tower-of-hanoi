@@ -87,7 +87,7 @@ function render()
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // Set global uniforms
-    gl.uniform1f( ambientIntensityLoc, 0.2 );
+    gl.uniform1f( ambientIntensityLoc, 0.3 );
     gl.uniform3fv( lightLoc.colour, light.material.colour );
     gl.uniform1f( lightLoc.intensity, light.material.intensity );
     gl.uniform3fv( lightLoc.position, light.transform.position );
