@@ -4,5 +4,4 @@ function loadFile(name) {
   xhr.open('GET', name, false);
   xhr.send(null);
   return xhr.status == okStatus ? xhr.responseText : null;
-};
-
+}
