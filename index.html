@@ -7,14 +7,17 @@
       left: 50%;
       position: fixed;
       transform: translate(-50%, -50%);
-    }
-    button {
-      width: 800px;
-      height: 40px;
-    }
-    h1 {
       text-align: center;
       font-family: "Lucida Console", "Courier New", monospace;
+    }
+    button {
+      width: 600px;
+      height: 40px;
+    }
+    .block {
+        display:inline-block;
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
   </style>
 
@@ -34,9 +37,17 @@
 </head>
 
 <body>
-  <h1> Towers of Hanoi </h1>
+  <section>
+    <div  class="block">    
+        Moves: <span id="moves" > 0 </span>
+    </div>
 
-  <canvas id="gl-canvas" width="800" height="800" >
+    <h1 class="block"> Towers of Hanoi </h1>
+
+    <span id="timer" class="block"> 00:00 </span>
+  </section>
+
+  <canvas id="gl-canvas" width="600" height="600" >
     Your browser does not support the HTML5 canvas element!
   </canvas>
   

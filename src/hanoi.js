@@ -8,7 +8,7 @@ const platformThickness = 0.1;
 const towerRadius = diskInnerRadius - 0.01;
 const towerHeight = (diskCount + 4) * diskHeight;
 
-const g0 = diskHeight / 2 + platformThickness;
+const g0 = diskHeight / 2 + platformThickness; // Ground zero
 
 const States = Object.freeze({
     SELECTING: 1, 
@@ -18,9 +18,11 @@ const States = Object.freeze({
     LOWERING: 5, 
 });
 
-var state = States.SELECTING;
+var playerMoves = 0;
 var selectedDisk = null;
 var selectedTower = null;
+var state = States.SELECTING;
+const startTimeStamp = new Date();
 
 
 function initScene()
@@ -138,18 +140,17 @@ function initScene()
       },
     };
 
-    //
+    // Create the disks
     for (var i = 0; i < diskCount; i++) {
-        const outerRadius = diskInnerRadius + (diskCount - i) * 0.1;
 
         const disk = {
             id: i,
-            mesh: tubeMesh(outerRadius, diskInnerRadius, diskHeight),
+            mesh: tubeMesh(diskInnerRadius + (diskCount - i) * 0.1, diskInnerRadius, diskHeight),
             material: {
                 colour: getRandomColour(),
             },
             transform: {
-                position: vec3(-2, i * diskHeight + g0, 0.0),
+                position: vec3(models.leftTower.transform.position[0], i * diskHeight + g0, 0.0),
             },
         }
 
@@ -160,13 +161,16 @@ function initScene()
 
 function update()
 {
+    // Spin the models
     models.spinningCube.transform.rotation[0] += 0.5;
     models.spinningCube.transform.rotation[1] += 1.0;
     models.spinningPyramid.transform.rotation[1] += 1.0;
     models.spinningBall.transform.rotation[1] += 1.0;
 
+    // Disk move step magnitude
     const step = 0.07;
 
+    //
     switch (state) {
         case States.LIFTING:
             if (selectedDisk.transform.position[1] < towerHeight + 2 * diskHeight) {
@@ -174,7 +178,8 @@ function update()
             } else {
                 state = States.RAISED;
             }
-            break;    
+            break;  
+
         case States.TRANSFERRING:
             const delta = selectedTower.transform.position[0] - selectedDisk.transform.position[0];
 
@@ -185,6 +190,7 @@ function update()
                 state = States.LOWERING;
             }
             break;
+            
         case States.LOWERING:
             if (selectedDisk.transform.position[1] > selectedTower.stack.length * diskHeight + g0) {
                 selectedDisk.transform.position[1] -= step; 
@@ -197,6 +203,10 @@ function update()
             }
             break;
     }
+
+    // Update the document
+    document.getElementById('moves').textContent = playerMoves;
+    document.getElementById('timer').textContent = (new Date(new Date() - startTimeStamp)).toISOString().substr(14, 5);
 }
 
 function keydownHandler(key) 
@@ -242,9 +252,8 @@ function keydownHandler(key)
             break;
 
         case 'Escape':
-            if (state == States.LIFTING || state == States.RAISED) {
+            if (state == States.LIFTING || state == States.RAISED) 
                 state = States.LOWERING;
-            }
             break;
 
         case '1':
@@ -264,6 +273,7 @@ function keydownHandler(key)
                 case States.RAISED:
                     if (!tower.stack.length || tower.stack[tower.stack.length-1].id < selectedDisk.id) {
                         selectedTower = tower;
+                        playerMoves++;
                         state = States.TRANSFERRING;
                     } else {
                         state = States.LOWERING;
