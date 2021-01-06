@@ -1,8 +1,4 @@
 
-var state = 0;
-var selectedDisk = null;
-var selectedTower = null;
-
 const diskCount = 7;
 const diskHeight = 0.2;
 const diskInnerRadius = 0.07;
@@ -13,6 +9,18 @@ const towerRadius = diskInnerRadius - 0.01;
 const towerHeight = (diskCount + 4) * diskHeight;
 
 const g0 = diskHeight / 2 + platformThickness;
+
+const States = Object.freeze({
+    SELECTING: 1, 
+    LIFTING: 2, 
+    RAISED: 3, 
+    TRANSFERRING: 4, 
+    LOWERING: 5, 
+});
+
+var state = States.SELECTING;
+var selectedDisk = null;
+var selectedTower = null;
 
 
 function initScene()
@@ -160,24 +168,24 @@ function update()
     const step = 0.07;
 
     switch (state) {
-        case 1:
+        case States.LIFTING:
             if (selectedDisk.transform.position[1] < towerHeight + 2 * diskHeight) {
                 selectedDisk.transform.position[1] += step;
             } else {
-                state = 2;
+                state = States.RAISED;
             }
             break;    
-        case 3:
+        case States.TRANSFERRING:
             const delta = selectedTower.transform.position[0] - selectedDisk.transform.position[0];
 
             if (Math.abs(delta) > 0.2) {
                 selectedDisk.transform.position[0] += Math.sign(delta) * step; 
             } else {
                 selectedDisk.transform.position[0] = selectedTower.transform.position[0];
-                unselectDisk();
+                state = States.LOWERING;
             }
             break;
-        case 4:
+        case States.LOWERING:
             if (selectedDisk.transform.position[1] > selectedTower.stack.length * diskHeight + g0) {
                 selectedDisk.transform.position[1] -= step; 
             } else {
@@ -185,7 +193,7 @@ function update()
                 selectedTower.stack.push(selectedDisk);
                 selectedTower = null;
                 selectedDisk = null;
-                state = 0;
+                state = States.SELECTING;
             }
             break;
     }
@@ -234,8 +242,8 @@ function keydownHandler(key)
             break;
 
         case 'Escape':
-            if (state == 1 || state == 2) {
-                unselectDisk();
+            if (state == States.LIFTING || state == States.RAISED) {
+                state = States.LOWERING;
             }
             break;
 
@@ -245,37 +253,22 @@ function keydownHandler(key)
             const tower = [models.leftTower, models.centreTower, models.rightTower][key - 1];
 
             switch (state) {
-                case 0:
-                    selectDisk(tower);
+                case States.SELECTING:
+                    if (tower.stack.length) {
+                        selectedTower = tower;
+                        selectedDisk = tower.stack.pop();
+                        state = States.LIFTING;
+                    }
                     break;
 
-                case 2:
-                    transferDisk(tower);
+                case States.RAISED:
+                    if (!tower.stack.length || tower.stack[tower.stack.length-1].id < selectedDisk.id) {
+                        selectedTower = tower;
+                        state = States.TRANSFERRING;
+                    } else {
+                        state = States.LOWERING;
+                    }
                     break;
             }
-    }
-}
-
-function selectDisk(tower)
-{
-    if (tower.stack.length) {
-        selectedTower = tower;
-        selectedDisk = tower.stack.pop();
-        state = 1;
-    }
-}
-
-function unselectDisk()
-{
-    state = 4;
-}
-
-function transferDisk(tower)
-{
-    if (!tower.stack.length || tower.stack[tower.stack.length-1].id < selectedDisk.id) {
-        selectedTower = tower;
-        state = 3;
-    } else {
-        unselectDisk();
     }
 }
