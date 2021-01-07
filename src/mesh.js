@@ -15,7 +15,7 @@ function renderMesh(mesh) {
   gl.drawArrays(gl.TRIANGLES, 0, mesh.vCount);
 }
 
-function createMesh(vertices, faces) {
+function createMeshFromFaces(vertices, faces) {
   // Calculate normals
   const faceNormals = calcNormals(vertices, faces);
 
@@ -48,12 +48,16 @@ function createMesh(vertices, faces) {
     }
   }
 
-  var normalBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(vertexNormals), gl.STATIC_DRAW);
-
   // Dereference face indicies
   vertices = faces.flat().map(i => vertices[i]);
+
+  return createMesh(vertices, vertexNormals);
+}
+
+function createMesh(vertices, normals) {
+  var normalBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(normals), gl.STATIC_DRAW);
 
   var vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -101,7 +105,7 @@ function cubeMesh() {
     triangulateQuad(5, 4, 0, 1),
   ];
 
-  return createMesh(vertices, faces);
+  return createMeshFromFaces(vertices, faces);
 }
 
 function planeMesh() {
@@ -109,7 +113,7 @@ function planeMesh() {
 
   const face = triangulateQuad(0, 1, 2, 3);
 
-  return createMesh(vertices, [face]);
+  return createMeshFromFaces(vertices, [face]);
 }
 
 function tetrahedronMesh() {
@@ -127,7 +131,7 @@ function tetrahedronMesh() {
     [3, 2, 0],
   ];
 
-  return createMesh(vertices, faces);
+  return createMeshFromFaces(vertices, faces);
 }
 
 function sphereMesh(divisions = 5) {
@@ -145,7 +149,7 @@ function sphereMesh(divisions = 5) {
   subdivide(a, d, b, divisions);
   subdivide(a, c, d, divisions);
 
-  return createMesh(vertices, faces);
+  return createMeshFromFaces(vertices, faces);
 
   // Nested function
   function subdivide(a, b, c, n) {
@@ -216,7 +220,7 @@ function tubeMesh(or, ir, h, n = 50) {
   // Inner join face
   faces.push(triangulateQuad(0, 2 * n, 3 * n - 1, n - 1));
 
-  return createMesh(vertices, faces);
+  return createMeshFromFaces(vertices, faces);
 }
 
 function cylinderMesh(n = 50) {
@@ -259,7 +263,7 @@ function cylinderMesh(n = 50) {
   // Outer join face
   faces.push(triangulateQuad(n - 1, 2 * n - 1, n, 0));
 
-  return createMesh(vertices, faces);
+  return createMeshFromFaces(vertices, faces);
 }
 
 function coneMesh(n = 50) {
@@ -296,5 +300,5 @@ function coneMesh(n = 50) {
   faces.push([n, n - 1, 0]);
   faces.push([n + 1, n - 1, 0]);
 
-  return createMesh(vertices, faces);  
+  return createMeshFromFaces(vertices, faces);  
 }

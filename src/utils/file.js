@@ -9,7 +9,8 @@ function loadFile(path) {
 function loadObjMesh(path) {
   const lines = loadFile(path).split(/\r?\n/);
 
-  var vertices = [];
+  var distinctVertices = [];
+  var distinctNormals = [];
   var faces = [];
 
   lines.forEach(line => {
@@ -17,14 +18,26 @@ function loadObjMesh(path) {
 
     switch (key) {
       case 'v':
-        const [x, y, z] = tokens;
+        var [x, y, z] = tokens;
 
-        vertices.push(vec4(parseFloat(x), parseFloat(y), parseFloat(z), 1));
+        distinctVertices.push(vec4(parseFloat(x), parseFloat(y), parseFloat(z), 1));
+        break;
+
+      case 'vn':
+        var [x, y, z] = tokens;
+
+        distinctNormals.push(vec3(parseFloat(x), parseFloat(y), parseFloat(z)));
         break;
 
       case 'f':
         const indices = tokens.map(token => {
-          return token.split('/')[0] - 1;
+          [v, tc, vn] = token.split('/');
+
+          return {
+            v: v -1,
+            tc: tc -1,
+            vn: vn -1,
+          };
         });
 
         faces.push(indices);
@@ -32,5 +45,15 @@ function loadObjMesh(path) {
     }
   });
 
-  return createMesh(vertices, faces);
+  var vertices = [];
+  var normals = [];
+
+  faces.forEach(face => {
+    face.forEach(index => {
+      vertices.push(distinctVertices[index.v]);
+      normals.push(distinctNormals[index.vn]);
+    });
+  });
+
+  return createMesh(vertices, normals);
 }
