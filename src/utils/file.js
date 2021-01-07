@@ -13,15 +13,21 @@ function loadObjMesh(path) {
   var faces = [];
 
   lines.forEach(line => {
-    const tokens = line.split(' ');
+    const [key, ...tokens] = line.split(' ');
 
-    switch (tokens[0]) {
+    switch (key) {
       case 'v':
-        vertices.push(vec4(parseFloat(tokens[1]), parseFloat(tokens[2]), parseFloat(tokens[3]), 1));
+        const [x, y, z] = tokens;
+
+        vertices.push(vec4(parseFloat(x), parseFloat(y), parseFloat(z), 1));
         break;
 
       case 'f':
-        faces.push([ tokens[1][0] - 1, tokens[2][0] - 1, tokens[3][0] - 1 ]);
+        const indices = tokens.map(token => {
+          return token.split('/')[0] - 1;
+        });
+
+        faces.push(indices);
         break;
     }
   });
