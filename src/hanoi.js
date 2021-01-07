@@ -128,8 +128,8 @@ function initScene() {
         scale: vec3(0.5, 0.5, 0.5),
       },
     },
-    spinningBall: {
-      mesh: sm,
+    spinningTube: {
+      mesh: tubeMesh(0.5, 0.4, 1),
       material: {
         colour: red,
         shininess: 32,
@@ -174,10 +174,11 @@ function update() {
   models.spinningCube.transform.rotation[0] += 0.5;
   models.spinningCube.transform.rotation[1] += 1.0;
   models.spinningPyramid.transform.rotation[1] += 1.0;
-  models.spinningBall.transform.rotation[1] += 1.0;
+  models.spinningTube.transform.rotation[0] += 1.0;
+  models.spinningTube.transform.rotation[1] += 0.5;
 
   // Disk move step magnitude
-  const step = 0.09;
+  const step = 0.15;
 
   //
   switch (state) {
