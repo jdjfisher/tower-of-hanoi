@@ -68,6 +68,22 @@ function initElements() {
   document.getElementById('help-button').addEventListener('click', () => {
     alert(loadFile('resources/help.txt'));
   });
+
+  // Remove disks
+  document.getElementById('less-button').addEventListener('click', () => {
+    if (diskCount > minDisks) {
+      diskCount--;
+      initScene();
+    }
+  });
+
+  // Add disks
+  document.getElementById('more-button').addEventListener('click', () => {
+    if (diskCount < maxDisks) {
+      diskCount++;
+      initScene();
+    }
+  });
 }
 
 function mainLoop() {

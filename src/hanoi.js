@@ -1,11 +1,13 @@
-const diskCount = 7;
+var diskCount = 7;
+const minDisks = 3;
+const maxDisks = 10;
 const diskHeight = 0.2;
 const diskInnerRadius = 0.07;
 
 const platformThickness = 0.1;
 
 const towerRadius = diskInnerRadius - 0.01;
-const towerHeight = (diskCount + 4) * diskHeight;
+const towerHeight = (maxDisks + 4) * diskHeight;
 
 const g0 = diskHeight / 2 + platformThickness; // Ground zero
 
@@ -17,12 +19,14 @@ const States = Object.freeze({
   LOWERING: 5,
 });
 
-var playerMoves = 0;
-var completed = false;
+var state;
+var completed;
+var playerMoves;
+var startTimestamp;
+
 var selectedDisk = null;
 var selectedTower = null;
-var state = States.SELECTING;
-const startTimeStamp = new Date();
+
 
 function initScene() {
   // Initialise meshes
@@ -63,7 +67,7 @@ function initScene() {
         shininess: 0,
       },
       transform: {
-        scale: vec3(6, platformThickness, 2),
+        scale: vec3(7.5, platformThickness, 2.5),
         position: vec3(0, platformThickness / 2, 0),
       },
     },
@@ -74,7 +78,7 @@ function initScene() {
       },
       transform: {
         scale: vec3(towerRadius, towerHeight, towerRadius),
-        position: vec3(-2, towerHeight / 2, 0),
+        position: vec3(-2.5, towerHeight / 2, 0),
       },
       stack: [],
     },
@@ -96,7 +100,7 @@ function initScene() {
       },
       transform: {
         scale: vec3(towerRadius, towerHeight, towerRadius),
-        position: vec3(2, towerHeight / 2, 0),
+        position: vec3(2.5, towerHeight / 2, 0),
       },
       stack: [],
     },
@@ -157,6 +161,12 @@ function initScene() {
     // Push the disk on to the left tower
     models.leftTower.stack.push(disk);
   }
+
+  // Set the initial state
+  playerMoves = 0;
+  completed = false;
+  state = States.SELECTING;
+  startTimestamp = new Date();
 }
 
 function update() {
@@ -213,7 +223,7 @@ function update() {
   } else {
     // Update the document while not completed
     document.getElementById('moves').textContent = playerMoves;
-    document.getElementById('timer').textContent = new Date(new Date() - startTimeStamp).toISOString().substr(14, 5);
+    document.getElementById('timer').textContent = new Date(new Date() - startTimestamp).toISOString().substr(14, 5);
   }
 }
 
