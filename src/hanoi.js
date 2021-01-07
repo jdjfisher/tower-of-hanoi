@@ -177,7 +177,7 @@ function update() {
   models.spinningBall.transform.rotation[1] += 1.0;
 
   // Disk move step magnitude
-  const step = 0.07;
+  const step = 0.09;
 
   //
   switch (state) {
@@ -211,7 +211,7 @@ function update() {
         state = States.SELECTING;
 
         // Check if all the disks are on either the centre or right tower
-        if (models.centreTower.stack.length === diskCount || models.centreTower.stack.length === diskCount) {
+        if (models.centreTower.stack.length === diskCount || models.rightTower.stack.length === diskCount) {
           completed = true;
         }
       }
@@ -219,7 +219,7 @@ function update() {
   }
 
   if (completed) {
-    // TODO: Something ...
+    light.material.colour = green;
   } else {
     // Update the document while not completed
     document.getElementById('moves').textContent = playerMoves;
