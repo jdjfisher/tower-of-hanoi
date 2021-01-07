@@ -176,7 +176,7 @@ function tubeMesh(or, ir, h, n = 50) {
   const hh = h / 2;
   var theta = 0;
 
-  // Generate verticies
+  // Generate verticies in a circle
   for (var i = 0; i < n; i++) {
     sinT = Math.sin(theta);
     cosT = Math.cos(theta);
@@ -226,7 +226,7 @@ function cylinderMesh(n = 50) {
   const deltaTheta = (2 * Math.PI) / n;
   var theta = 0;
 
-  // Generate verticies
+  // Generate verticies in a circle
   for (var i = 0; i < n; i++) {
     sinT = Math.sin(theta);
     cosT = Math.cos(theta);
@@ -260,4 +260,41 @@ function cylinderMesh(n = 50) {
   faces.push(triangulateQuad(n - 1, 2 * n - 1, n, 0));
 
   return createMesh(vertices, faces);
+}
+
+function coneMesh(n = 50) {
+  var vertices = [];
+  var faces = [];
+
+  const deltaTheta = (2 * Math.PI) / n;
+  var theta = 0;
+
+  // Generate verticies in a circle
+  for (var i = 0; i < n; i++) {
+    sinT = Math.sin(theta);
+    cosT = Math.cos(theta);
+    theta -= deltaTheta;
+
+    vertices[i] = vec4(cosT, 0, sinT, 1);
+  }
+
+  // Base centre
+  vertices[n] = vec4(0, 0, 0, 1);
+
+  // Cone peak
+  vertices[n + 1] = vec4(0, 1, 0, 1);
+
+  for (var i = 0; i < n - 1; i++) {
+    // Base faces
+    faces.push([n, i, i + 1]);
+
+    // Vertical faces
+    faces.push([n + 1, i, i + 1]);
+  }
+
+  // Base & Vertical joiner face
+  faces.push([n, n - 1, 0]);
+  faces.push([n + 1, n - 1, 0]);
+
+  return createMesh(vertices, faces);  
 }
