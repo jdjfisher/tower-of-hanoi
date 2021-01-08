@@ -20,7 +20,6 @@ const States = Object.freeze({
 });
 
 var state;
-var completed;
 var playerMoves;
 var startTimestamp;
 
@@ -164,7 +163,6 @@ function initScene() {
 
   // Set the initial state
   playerMoves = 0;
-  completed = false;
   state = States.SELECTING;
   startTimestamp = new Date();
 }
@@ -211,17 +209,33 @@ function update() {
         selectedDisk = null;
         state = States.SELECTING;
 
-        // Check if all the disks are on either the centre or right tower
-        if (models.centreTower.stack.length === diskCount || models.rightTower.stack.length === diskCount) {
-          completed = true;
+        // Check if all the disks are on the right tower
+        if (models.rightTower.stack.length === diskCount) {
+          // Set the state to completed
+          state = States.COMPLETED;
+
+          // Set the light to green
+          light.material.colour = green;
+          light.material.intensity = 0.8;
+          
+          // Easter egg
+          models.koan = {
+            mesh: loadObjMesh('resources/meshes/koan.obj'),
+            material: {
+              colour: white,
+              shininess: 2,
+            },
+            transform: {
+              position: vec3(),
+              scale: vec3(0.6, towerHeight * 0.2, 0.6),
+            }
+          };
         }
       }
       break;
   }
 
-  if (completed) {
-    light.material.colour = green;
-  } else {
+  if (state !== States.COMPLETED) {
     // Update the document while not completed
     document.getElementById('moves').textContent = playerMoves;
     document.getElementById('timer').textContent = new Date(new Date() - startTimestamp).toISOString().substr(14, 5);

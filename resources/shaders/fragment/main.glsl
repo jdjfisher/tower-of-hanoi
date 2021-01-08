@@ -22,7 +22,7 @@ void main()
     vec3 lightFragVector = light.position - fPosition;
     vec3 lightDirection = normalize(lightFragVector);
     float distance = length(lightFragVector);
-    float attenuation = 1.0 / (1.0 + 0.05 * distance + 0.025 * (distance * distance));    
+    float attenuation = 1.0 / (1.0 + 0.1 * distance + 0.05 * (distance * distance));    
 
     // Ambient component
     vec3 ambient = vec3(ambientIntensity);

@@ -1,4 +1,4 @@
-const white = vec3(1.0, 1.0, 1.0);
+const white = vec3(0.9, 0.9, 0.9);
 const black = vec3(0.0, 0.0, 0.0);
 const red = vec3(1.1, 0.1, 0.1);
 const green = vec3(0.1, 1.0, 0.1);
