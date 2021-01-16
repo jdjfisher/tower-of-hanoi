@@ -20,6 +20,7 @@ var eye = cameraPositions[currentCamera];
 const up = vec3(0.0, 1.0, 0.0);
 const at = vec3(0.0, 2.0, 0.0);
 
+
 function nextCamera() {
   currentCamera = Math.min(currentCamera + 1, cameraPositions.length - 1);
   eye = cameraPositions[currentCamera];

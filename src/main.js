@@ -17,6 +17,8 @@ var projectionMatrixLoc;
 var models = {};
 var light = {};
 
+
+// Entry point
 window.onload = () => {
   initElements();
   initOpenGL();

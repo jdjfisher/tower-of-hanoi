@@ -178,7 +178,7 @@ function update() {
   // Disk move step magnitude
   const step = 0.15;
 
-  //
+  // Update based on the current state
   switch (state) {
     case States.LIFTING:
       if (selectedDisk.transform.position[1] < towerHeight + 2 * diskHeight) {
@@ -235,8 +235,8 @@ function update() {
       break;
   }
 
+  // Update the document while not completed
   if (state !== States.COMPLETED) {
-    // Update the document while not completed
     document.getElementById('moves').textContent = playerMoves;
     document.getElementById('timer').textContent = new Date(new Date() - startTimestamp).toISOString().substr(14, 5);
   }
@@ -253,42 +253,52 @@ function keydownHandler(key) {
       break;
 
     case 'w':
+      // Move the camera in the direction of the view vector
       eye = add(eye, getViewVector());
       break;
 
     case 's':
+      // Move the camera in the opposite direction of the view vector (but not below the platform)
       eye = subtract(eye, getViewVector());
-      eye[1] = Math.max(eye[1], platformThickness); // Force camera to stay above xy-plane
+      eye[1] = Math.max(eye[1], platformThickness); 
       break;
 
     case 'a':
+      // Move the camera perpendicular to the view vector
       eye = add(eye, cross(up, getViewVector()));
       break;
 
     case 'd':
+      // Move the camera perpendicular to the view vector
       eye = subtract(eye, cross(up, getViewVector()));
       break;
 
     case 'q':
+      // Move the camera up
       eye[1]++;
       break;
 
     case 'e':
-      eye[1]--;
-      eye[1] = Math.max(eye[1], platformThickness); // Force camera to stay above xy-plane
+      // Move the camera down (but not below the platform)
+      eye[1] = Math.max(eye[1] - 1, platformThickness); 
       break;
 
     case 'Escape':
-      if (state == States.LIFTING || state == States.RAISED) state = States.LOWERING;
+      // Cancel a disk selection
+      if (state == States.LIFTING || state == States.RAISED) {
+        state = States.LOWERING;
+      }
       break;
 
     case '1':
     case '2':
     case '3':
+      // Select the tower based on the key
       const tower = [models.leftTower, models.centreTower, models.rightTower][key - 1];
 
       switch (state) {
         case States.SELECTING:
+          // Select the disk at the top of the tower
           if (tower.stack.length) {
             selectedTower = tower;
             selectedDisk = tower.stack.pop();
@@ -297,6 +307,7 @@ function keydownHandler(key) {
           break;
 
         case States.RAISED:
+          // Initiate transfer of the disk
           if (!tower.stack.length || tower.stack[tower.stack.length - 1].id < selectedDisk.id) {
             selectedTower = tower;
             playerMoves++;

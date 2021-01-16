@@ -51,14 +51,17 @@ function createMeshFromFaces(vertices, faces) {
   // Dereference face indicies
   vertices = faces.flat().map(i => vertices[i]);
 
+  // Create the mesh
   return createMesh(vertices, vertexNormals);
 }
 
 function createMesh(vertices, normals) {
+  // Create normal buffer
   var normalBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, flatten(normals), gl.STATIC_DRAW);
 
+  // Create position buffer
   var vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
